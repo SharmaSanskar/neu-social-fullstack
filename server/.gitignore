@@ -1,0 +1,39 @@
+# Node modules
+node_modules/
+
+# Build output
+dist/
+build/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Environment variables
+.env
+
+# Log files
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE/editor specific files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# TypeScript configuration files
+*.tsconfig.json
+
+# npm and Yarn lock files (if using npm, keep package-lock.json; if using Yarn, keep yarn.lock)
+package-lock.json
+yarn.lock
+
+# Coverage reports
+coverage/
+
+# Other optional files
+*.tgz
+*.gz

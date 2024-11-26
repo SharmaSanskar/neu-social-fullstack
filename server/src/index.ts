@@ -1,20 +1,28 @@
-import express from "express";
-import cors from "cors";
-import dotenv from "dotenv";
+import express, { Application } from 'express';
+import { connectDB } from './config/db';
+import userRoutes from './routes/userRoutes';
+import postRoutes from './routes/postRoutes';
 
-dotenv.config();
-const app = express();
+
+const app: Application = express();
+const PORT = process.env.PORT || 6000;
 
 // Middleware
-app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
-app.get("/api/hello", (req, res) => {
-  res.json({ message: "Hello NEU Social" });
-});
+// Routes
+app.use('/api', userRoutes);
+app.use('/api', postRoutes);
 
-const PORT = process.env.PORT || 5000;
+// Connect to MongoDB
+connectDB();
+
+// Start server
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });
+
+
+
+
+

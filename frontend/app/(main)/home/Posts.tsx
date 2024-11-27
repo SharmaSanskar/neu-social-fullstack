@@ -1,4 +1,6 @@
+import { useEffect } from "react";
 import Post from "./Post";
+import { fetchAllPosts } from "@/services/PostService";
 
 const posts = [
   {
@@ -25,6 +27,14 @@ const posts = [
 ];
 
 function Posts() {
+  const getPost = async () => {
+    const res = await fetchAllPosts();
+    console.log(res);
+  };
+
+  useEffect(() => {
+    getPost();
+  }, []);
   return (
     <div>
       <div className="flex flex-col gap-6">

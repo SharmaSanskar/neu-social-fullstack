@@ -8,3 +8,8 @@ export const fetchAllPosts = async () => {
   const res = await postApi.get(`/api/posts`);
   return res.data;
 };
+
+export const createPost = async (data: any) => {
+  const res = await postApi.post(`/api/posts`, data);
+  return res.data;
+};

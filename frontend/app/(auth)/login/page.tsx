@@ -7,12 +7,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { loginRequest } from "@/services/AuthService";
+import { useAppDispatch } from "@/app/lib/hooks";
+import { setUserId } from "@/app/lib/user/userSlice";
 
 function Login() {
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const dispatch = useAppDispatch();
 
   const formik = useFormik({
     initialValues: {
@@ -31,6 +34,9 @@ function Login() {
       console.log("values", values);
       loginRequest(values)
         .then((res) => {
+          console.log("logged in", res.userId);
+          localStorage.setItem("userId", res.userId);
+          dispatch(setUserId(res.userId));
           router.push("/home");
         })
         .catch((err) => {

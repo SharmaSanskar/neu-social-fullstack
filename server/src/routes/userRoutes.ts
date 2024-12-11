@@ -1,3 +1,4 @@
+// src/routes/userRoutes.ts
 import express, { Request, Response, Router, RequestHandler } from 'express';
 import bcrypt from 'bcryptjs';
 import User, { IUser } from '../models/User';
@@ -10,6 +11,8 @@ interface SignupRequest {
   firstName: string;
   lastName: string;
   course: string;
+  username: string;
+  bio?: string;
 }
 
 interface LoginRequest {
@@ -20,11 +23,27 @@ interface LoginRequest {
 // Signup API
 const signupHandler: RequestHandler = async (req, res): Promise<void> => {
   try {
-    const { email, password, firstName, lastName, course } = req.body as SignupRequest;
+    const { 
+      email, 
+      password, 
+      firstName, 
+      lastName, 
+      course,
+      username,
+      bio 
+    } = req.body as SignupRequest;
 
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      res.status(400).json({ message: 'User already exists' });
+    // Check if email already exists
+    const existingEmail = await User.findOne({ email });
+    if (existingEmail) {
+      res.status(400).json({ message: 'Email already exists' });
+      return;
+    }
+
+    // Check if username already exists
+    const existingUsername = await User.findOne({ username });
+    if (existingUsername) {
+      res.status(400).json({ message: 'Username already exists' });
       return;
     }
 
@@ -35,7 +54,12 @@ const signupHandler: RequestHandler = async (req, res): Promise<void> => {
       password: hashedPassword,
       firstName,
       lastName,
-      course
+      course,
+      username,
+      bio: bio || null,
+      posts: 0,
+      friends: 0,
+      isPrivate: false
     });
 
     await user.save();
@@ -45,7 +69,7 @@ const signupHandler: RequestHandler = async (req, res): Promise<void> => {
   }
 };
 
-// Login API
+// Login API (remains the same)
 const loginHandler: RequestHandler = async (req, res): Promise<void> => {
   try {
     const { email, password } = req.body as LoginRequest;
@@ -62,26 +86,35 @@ const loginHandler: RequestHandler = async (req, res): Promise<void> => {
       return;
     }
 
-    res.json({ message: 'Login successful', userId: user._id });
+    res.json({ 
+      message: 'Login successful', 
+      userId: user._id,
+      username: user.username
+    });
   } catch (error) {
     res.status(500).json({ message: 'Error during login', error });
   }
 };
 
-// Get all users API
+// Get all users API (modified to include username)
 const getAllUsersHandler: RequestHandler = async (_req, res): Promise<void> => {
   try {
-    const users = await User.find().select('-password');
+    const users = await User.find()
+      .select('-password')
+      .select('username firstName lastName email course bio posts friends isPrivate');
     res.json(users);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching users', error });
   }
 };
 
-// Get user by ID API
+// Get user by ID API (modified to include more details)
 const getUserByIdHandler: RequestHandler = async (req, res): Promise<void> => {
   try {
-    const user = await User.findById(req.params.id).select('-password');
+    const user = await User.findById(req.params.id)
+      .select('-password')
+      .select('username firstName lastName email course bio posts friends isPrivate');
+    
     if (!user) {
       res.status(404).json({ message: 'User not found' });
       return;

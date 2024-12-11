@@ -107,6 +107,44 @@ const getAllUsersHandler: RequestHandler = async (_req, res): Promise<void> => {
     res.status(500).json({ message: 'Error fetching users', error });
   }
 };
+//Updating the User
+
+// Update User API
+const updateUserHandler: RequestHandler = async (req, res): Promise<void> => {
+  try {
+    const { id } = req.params; // Extract user ID from the route
+    const { firstName, lastName, course, bio, isPrivate } = req.body; // Extract fields from the body
+
+    // Validate if at least one field is provided
+    if (!firstName && !lastName && !course && !bio && isPrivate === undefined) {
+      res.status(400).json({ message: 'No valid fields to update' });
+      return;
+    }
+
+    // Update the user
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      { firstName, lastName, course, bio, isPrivate },
+      { new: true, runValidators: true } // Ensure validation and return updated document
+    ).select('-password'); // Exclude password from the response
+
+    if (!updatedUser) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+
+    res.json({
+      message: 'User updated successfully',
+      user: updatedUser,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Error updating user',
+      error,
+    });
+  }
+};
+
 
 // Get user by ID API (modified to include more details)
 const getUserByIdHandler: RequestHandler = async (req, res): Promise<void> => {
@@ -129,5 +167,6 @@ router.post('/signup', signupHandler);
 router.post('/login', loginHandler);
 router.get('/users', getAllUsersHandler);
 router.get('/users/:id', getUserByIdHandler);
+router.put('/users/:id', updateUserHandler);
 
 export default router;

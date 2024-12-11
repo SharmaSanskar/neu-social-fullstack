@@ -1,7 +1,67 @@
+"use client";
+
 import { Input } from "@nextui-org/react";
 import Link from "next/link";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import { useState } from "react";
+import { signupRequest } from "@/services/AuthService";
+import { useRouter } from "next/navigation";
 
 function Signup() {
+  const router = useRouter();
+
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const formik = useFormik({
+    initialValues: {
+      firstName: "",
+      lastName: "",
+      username: "",
+      course: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+    validationSchema: Yup.object({
+      firstName: Yup.string().required("First name is required"),
+      lastName: Yup.string().required("Last name is required"),
+      username: Yup.string().required("Username is required"),
+      course: Yup.string().required("Course name is required"),
+      email: Yup.string()
+        .required("Email is required")
+        .email("Invalid email address"),
+      password: Yup.string().required("Password is required"),
+      confirmPassword: Yup.string().oneOf(
+        [Yup.ref("password")],
+        "Passwords must match"
+      ),
+    }),
+    onSubmit: (values) => {
+      setLoading(true);
+
+      const updatedValues: any = { ...values };
+      delete updatedValues.confirmPassword;
+      console.log("values", updatedValues);
+      signupRequest(updatedValues)
+        .then((res) => {
+          router.push("/login");
+        })
+        .catch((err) => {
+          console.log(err);
+          if (err.response)
+            setErrorMsg(
+              err.response.data.message
+                ? err.response.data.message
+                : "Signup failed"
+            );
+
+          setLoading(false);
+        });
+    },
+  });
+
   return (
     <div className="h-full flex flex-col items-center justify-center text-center px-28 py-16">
       <div className="h-full w-full flex flex-col justify-between">
@@ -11,36 +71,106 @@ function Signup() {
           <p>Create your NEU Social account</p>
         </div>
 
-        <form className="flex flex-col gap-2">
+        <form
+          onSubmit={formik.handleSubmit}
+          className="flex flex-col gap-2 text-left"
+        >
           <div className="flex gap-4">
             <Input
               type="text"
-              name=""
+              name="firstName"
               label="First name"
               variant="underlined"
+              value={formik.values.firstName}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              isInvalid={
+                !!(formik.touched.firstName && formik.errors.firstName)
+              }
+              errorMessage={formik.errors.firstName}
             />
-            <Input type="text" name="" label="Last name" variant="underlined" />
+            <Input
+              type="text"
+              name="lastName"
+              label="Last name"
+              variant="underlined"
+              value={formik.values.lastName}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              isInvalid={!!(formik.touched.lastName && formik.errors.lastName)}
+              errorMessage={formik.errors.lastName}
+            />
           </div>
-          <Input type="email" name="" label="Email" variant="underlined" />
-          <Input type="text" name="" label="Course" variant="underlined" />
+          <Input
+            type="text"
+            name="username"
+            label="Username"
+            variant="underlined"
+            value={formik.values.course}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            isInvalid={!!(formik.touched.username && formik.errors.username)}
+            errorMessage={formik.errors.username}
+          />
+          <Input
+            type="email"
+            name="email"
+            label="Email"
+            variant="underlined"
+            value={formik.values.email}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            isInvalid={!!(formik.touched.email && formik.errors.email)}
+            errorMessage={formik.errors.email}
+          />
+          <Input
+            type="text"
+            name="course"
+            label="Course"
+            variant="underlined"
+            value={formik.values.course}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            isInvalid={!!(formik.touched.course && formik.errors.course)}
+            errorMessage={formik.errors.course}
+          />
           <Input
             type="password"
-            name=""
+            name="password"
             label="Password"
             variant="underlined"
+            value={formik.values.password}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            isInvalid={!!(formik.touched.password && formik.errors.password)}
+            errorMessage={formik.errors.password}
           />
           <Input
             type="password"
-            name=""
+            name="confirmPassword"
             label="Confirm Password"
             variant="underlined"
+            value={formik.values.confirmPassword}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            isInvalid={
+              !!(
+                formik.touched.confirmPassword && formik.errors.confirmPassword
+              )
+            }
+            errorMessage={formik.errors.confirmPassword}
           />
 
-          <button className="bg-neuBlue text-white p-2 rounded-lg mt-6">
-            Signup
-          </button>
-          <button className="bg-neuBlue text-white p-2 rounded-lg">
-            Signup with Google
+          {errorMsg && (
+            <p className="text-neuRed text-sm text-center">{errorMsg}</p>
+          )}
+
+          <button
+            disabled={loading}
+            type="submit"
+            className="bg-neuBlue text-white p-2 rounded-lg mt-4"
+          >
+            {loading ? "..." : "Signup"}
           </button>
         </form>
 

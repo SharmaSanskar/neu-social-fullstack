@@ -1,14 +1,24 @@
+import FriendSection from "@/components/FriendSection";
+import TrendingSection from "@/components/TrendingSection";
+import { Divider, ScrollShadow } from "@nextui-org/react";
+
 function HomeSidebar() {
   return (
-    <section className="w-full min-h-screen bg-slate-200 text-black py-8 px-6 flex flex-col gap-6">
-      <div className="bg-primaryWhite flex-1 rounded-lg">
-        <h3>Trending</h3>
-        <div>Some stuff</div>
+    <section className="w-full min-h-screen bg-slate-200 text-black py-8 pr-8 flex flex-col gap-6">
+      <div className="bg-primaryWhite rounded-lg flex flex-col overflow-hidden px-3">
+        <h3 className="mt-2 font-semibold">Trending</h3>
+        <Divider className="my-2" />
+        <ScrollShadow className="max-h-[200px]" hideScrollBar>
+          <TrendingSection />
+        </ScrollShadow>
       </div>
 
-      <div className="bg-primaryWhite flex-1 rounded-lg">
-        <h3>Friends</h3>
-        <div>Some stuff</div>
+      <div className="bg-primaryWhite rounded-lg flex flex-col overflow-hidden px-3">
+        <h3 className="mt-2 font-semibold">Friends</h3>
+        <Divider className="my-2" />
+        <ScrollShadow className="max-h-[200px]" hideScrollBar>
+          <FriendSection />
+        </ScrollShadow>
       </div>
     </section>
   );

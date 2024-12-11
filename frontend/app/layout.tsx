@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import "./globals.scss";
 import { Providers } from "./providers";
+import StoreProvider from "./StoreProvider";
 
 export const metadata: Metadata = {
   title: "NEU Social",
@@ -18,7 +19,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="light">
       <body className={montserrat.className}>
-        <Providers>{children}</Providers>
+        <StoreProvider>
+          <Providers>{children}</Providers>
+        </StoreProvider>
       </body>
     </html>
   );

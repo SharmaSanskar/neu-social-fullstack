@@ -13,7 +13,45 @@ interface PostRequest {
   userId: string;
 }
 
-// Create a new post
+
+// // Create a new post
+// const createPostHandler: RequestHandler = async (req, res): Promise<void> => {
+//   try {
+//     const { title, content, userId } = req.body as PostRequest;
+
+//     // Validate user exists
+//     const user = await User.findById(userId);
+//     if (!user) {
+//       res.status(404).json({ message: 'User not found' });
+//       return;
+//     }
+// ///
+
+// ///
+//     // Create new post
+//     const post = new Post({
+//       title,
+//       content,
+//       author: userId
+//     });
+
+//     await post.save();
+
+//     res.status(201).json({ 
+//       message: 'Post created successfully', 
+//       post: {
+//         _id: post._id,
+//         title: post.title,
+//         content: post.content,
+//         createdAt: post.createdAt
+//       }
+//     });
+//   } catch (error) {
+//     console.error('Error creating post:', error);
+//     res.status(500).json({ message: 'Error creating post', error });
+//   }
+// };
+
 const createPostHandler: RequestHandler = async (req, res): Promise<void> => {
   try {
     const { title, content, userId } = req.body as PostRequest;
@@ -29,10 +67,17 @@ const createPostHandler: RequestHandler = async (req, res): Promise<void> => {
     const post = new Post({
       title,
       content,
-      author: userId
+      author: userId,
+      likes: 0,
+      comments: 0,
+      trending: false
     });
 
     await post.save();
+
+    // Increment user's post count
+    user.posts += 1;
+    await user.save();
 
     res.status(201).json({ 
       message: 'Post created successfully', 
@@ -40,7 +85,9 @@ const createPostHandler: RequestHandler = async (req, res): Promise<void> => {
         _id: post._id,
         title: post.title,
         content: post.content,
-        createdAt: post.createdAt
+        createdAt: post.createdAt,
+        likes: post.likes,
+        comments: post.comments
       }
     });
   } catch (error) {
@@ -49,6 +96,62 @@ const createPostHandler: RequestHandler = async (req, res): Promise<void> => {
   }
 };
 
+// Get posts by User ID
+const getPostsByUserIdHandler: RequestHandler = async (req, res): Promise<void> => {
+  try {
+    const userId = req.params.userId;
+
+    // Validate user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+
+    const posts = await Post.find({ author: userId })
+      .populate('author', 'firstName lastName username')
+      .sort({ createdAt: -1 });
+
+    res.json(posts.map(post => ({
+      _id: post._id,
+      title: post.title,
+      content: post.content,
+      author: post.author,
+      createdAt: post.createdAt,
+      likes: post.likes,
+      comments: post.comments
+    })));
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching user posts', error });
+  }
+};
+
+// Get Trending Posts
+const getTrendingPostsHandler: RequestHandler = async (req, res): Promise<void> => {
+  try {
+    const limit = parseInt(req.query.limit as string) || 10;
+
+    // Ensure valid sorting and schema structure
+    const trendingPosts = await Post.find()
+      .populate('author', 'firstName lastName username')
+      .sort({ likes: -1, comments: -1 }) // Sorting by likes and comments
+      .limit(limit)
+      .exec(); // Ensure the query executes properly
+
+    res.json(trendingPosts.map(post => ({
+      _id: post._id,
+      title: post.title,
+      content: post.content,
+      author: post.author,
+      createdAt: post.createdAt,
+      likes: post.likes,
+      comments: post.comments, // Ensure comments are handled properly
+    })));
+  } catch (error) {
+    console.error('Error fetching trending posts:', error); // Log error for debugging
+    res.status(500).json({ message: 'Error fetching trending posts', error });
+  }
+};
 // Get all posts
 const getAllPostsHandler: RequestHandler = async (req, res): Promise<void> => {
   try {
@@ -61,7 +164,9 @@ const getAllPostsHandler: RequestHandler = async (req, res): Promise<void> => {
       title: post.title,
       content: post.content,
       author: post.author,
-      createdAt: post.createdAt
+      createdAt: post.createdAt,
+      likes: post.likes,
+      comments: post.comments
     })));
   } catch (error) {
     res.status(500).json({ message: 'Error fetching posts', error });
@@ -84,7 +189,9 @@ const getPostByIdHandler: RequestHandler = async (req, res): Promise<void> => {
       title: post.title,
       content: post.content,
       author: post.author,
-      createdAt: post.createdAt
+      createdAt: post.createdAt,
+      likes: post.likes,
+      comments: post.comments
     });
   } catch (error) {
     res.status(500).json({ message: 'Error fetching post', error });
@@ -162,9 +269,12 @@ const deletePostHandler: RequestHandler = async (req, res): Promise<void> => {
 // Routes
 router.post('/posts', createPostHandler);
 router.get('/posts', getAllPostsHandler);
+router.get('/posts/trending', getTrendingPostsHandler);
 router.get('/posts/:id', getPostByIdHandler);
 router.put('/posts/:id', updatePostHandler);
 router.delete('/posts/:id', deletePostHandler);
+router.get('/posts/user/:userId', getPostsByUserIdHandler);
+
 
 export default router;
 

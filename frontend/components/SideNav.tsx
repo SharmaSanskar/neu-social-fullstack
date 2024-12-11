@@ -16,15 +16,11 @@ function SideNav() {
         <div className="text-center">
           <h3>NEUSocial</h3>
 
-          <div className="flex flex-col items-center mt-5">
-            <Avatar src="/images/avatar.jpg" className="w-16 h-16" />
-
-            <div className="text-center mt-3">
-              <h4 className="text-base font-bold">
-                {userObj.firstName} {userObj.lastName}
-              </h4>
-              <p className="text-xs opacity-70">Computer Science</p>
-            </div>
+          <div className="text-center mt-3">
+            <h4 className="text-base font-bold">
+              {userObj.firstName} {userObj.lastName}
+            </h4>
+            <p className="text-xs opacity-70">Computer Science</p>
           </div>
         </div>
 

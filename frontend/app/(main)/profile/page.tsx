@@ -1,8 +1,15 @@
+"use client";
+
+import { Divider } from "@nextui-org/react";
+import UserCard from "./UserCard";
+import UserPosts from "./UserPosts";
+
 function Profile() {
   return (
-    <div>
-      <h1>Profile</h1>
-      <p>Sanskar Sharma</p>
+    <div className="px-20 py-8">
+      <UserCard />
+      <Divider className="my-6" />
+      <UserPosts />
     </div>
   );
 }

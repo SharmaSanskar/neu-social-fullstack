@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import Post from "./Post";
 import { fetchAllPosts } from "@/services/PostService";
 import useSWR from "swr";

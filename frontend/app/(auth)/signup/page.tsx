@@ -18,6 +18,7 @@ function Signup() {
     initialValues: {
       firstName: "",
       lastName: "",
+      username: "",
       course: "",
       email: "",
       password: "",
@@ -26,6 +27,7 @@ function Signup() {
     validationSchema: Yup.object({
       firstName: Yup.string().required("First name is required"),
       lastName: Yup.string().required("Last name is required"),
+      username: Yup.string().required("Username is required"),
       course: Yup.string().required("Course name is required"),
       email: Yup.string()
         .required("Email is required")
@@ -100,6 +102,17 @@ function Signup() {
             />
           </div>
           <Input
+            type="text"
+            name="username"
+            label="Username"
+            variant="underlined"
+            value={formik.values.course}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            isInvalid={!!(formik.touched.username && formik.errors.username)}
+            errorMessage={formik.errors.username}
+          />
+          <Input
             type="email"
             name="email"
             label="Email"
@@ -158,9 +171,6 @@ function Signup() {
             className="bg-neuBlue text-white p-2 rounded-lg mt-4"
           >
             {loading ? "..." : "Signup"}
-          </button>
-          <button className="bg-neuBlue text-white p-2 rounded-lg">
-            Signup with Google
           </button>
         </form>
 

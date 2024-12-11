@@ -8,3 +8,8 @@ export const fetchUserData = async (id: string) => {
   const res = await userApi.get(`/api/users/${id}`);
   return res.data;
 };
+
+export const fetchAllUsers = async () => {
+  const res = await userApi.get(`/api/users`);
+  return res.data;
+};

@@ -91,9 +91,6 @@ function Login() {
           >
             {loading ? "..." : "Login"}
           </button>
-          <button className="bg-neuBlue text-white p-2 rounded-lg">
-            Login with Google
-          </button>
         </form>
 
         <div>

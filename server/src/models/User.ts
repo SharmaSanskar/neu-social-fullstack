@@ -1,5 +1,5 @@
 // src/models/User.ts
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document, Types } from 'mongoose';
 
 export interface IUser extends Document {
   email: string;
@@ -12,6 +12,12 @@ export interface IUser extends Document {
   posts: number;
   friends: number;
   isPrivate: boolean;
+  profilePicture?: string;
+  friendsList: Types.ObjectId[];
+  friendRequests: {
+    sent: Types.ObjectId[];
+    received: Types.ObjectId[];
+  };
 }
 
 const UserSchema: Schema = new Schema({
@@ -60,6 +66,24 @@ const UserSchema: Schema = new Schema({
   isPrivate: {
     type: Boolean,
     default: false
+  },
+  profilePicture: {
+    type: String,
+    default: null
+  },
+  friendsList: [{
+    type: Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  friendRequests: {
+    sent: [{
+      type: Schema.Types.ObjectId,
+      ref: 'User'
+    }],
+    received: [{
+      type: Schema.Types.ObjectId,
+      ref: 'User'
+    }]
   }
 }, {
   timestamps: true

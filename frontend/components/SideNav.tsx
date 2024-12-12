@@ -1,4 +1,5 @@
 import { useAppSelector } from "@/app/lib/hooks";
+import { removeAuthUser } from "@/app/utils/auth";
 import { Avatar, Button } from "@nextui-org/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -7,7 +8,8 @@ function SideNav() {
   const router = useRouter();
   const userObj = useAppSelector((state) => state.user.userObj);
   const logoutUser = () => {
-    localStorage.removeItem("userId");
+    // localStorage.removeItem("userId");
+    removeAuthUser();
     router.push("/login");
   };
   return (
@@ -38,7 +40,7 @@ function SideNav() {
             Find
           </Link>
           <Link
-            href={"/profile"}
+            href={`/profile/${userObj.username}`}
             className="hover:bg-slate-900/40 w-full rounded-lg p-2"
           >
             Profile

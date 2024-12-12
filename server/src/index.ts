@@ -4,9 +4,6 @@ import { connectDB } from "./config/db";
 import userRoutes from "./routes/userRoutes";
 import postRoutes from "./routes/postRoutes";
 
-import cors from "cors";
-
-
 const app: Application = express();
 const PORT = process.env.PORT || 4000;
 
@@ -23,7 +20,6 @@ app.use(
 // Routes
 app.use("/api", userRoutes);
 app.use("/api", postRoutes);
-
 
 // Connect to MongoDB
 connectDB();

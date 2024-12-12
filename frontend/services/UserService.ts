@@ -9,7 +9,17 @@ export const fetchUserData = async (id: string) => {
   return res.data;
 };
 
+export const fetchUserDataByUsername = async (username: string) => {
+  const res = await userApi.get(`/api/users/username/${username}`);
+  return res.data;
+};
+
 export const fetchAllUsers = async () => {
   const res = await userApi.get(`/api/users`);
+  return res.data;
+};
+
+export const updateUserProfile = async (userId: string, newProfile: any) => {
+  const res = await userApi.put(`/api/users/${userId}`, newProfile);
   return res.data;
 };

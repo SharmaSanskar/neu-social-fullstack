@@ -1,25 +1,20 @@
 "use client";
 
-import { fetchAllUsers } from "@/services/UserService";
 import { Avatar, Button, Card } from "@nextui-org/react";
-import useSWR from "swr";
 
-function FindUsersList() {
-  const { data: usersData, isLoading: isUsersLoading } = useSWR(
-    "users",
-    fetchAllUsers,
-    {
-      onError: (err) => {
-        console.log("Users api error", err);
-      },
-    }
-  );
+function FindUsersList({
+  isUsersLoading,
+  userList,
+}: {
+  isUsersLoading: boolean;
+  userList: any[];
+}) {
   return (
     <div>
       <div className="flex flex-col gap-6">
-        {isUsersLoading || !usersData
+        {isUsersLoading || !userList
           ? ""
-          : usersData.map((user: any) => (
+          : userList.map((user: any) => (
               <UserTile key={user._id} user={user} />
             ))}
       </div>

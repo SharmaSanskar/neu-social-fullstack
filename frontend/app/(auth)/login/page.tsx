@@ -9,6 +9,7 @@ import { useState } from "react";
 import { loginRequest } from "@/services/AuthService";
 import { useAppDispatch } from "@/app/lib/hooks";
 import { setUserId } from "@/app/lib/user/userSlice";
+import { setAuthUser } from "@/app/utils/auth";
 
 function Login() {
   const router = useRouter();
@@ -35,8 +36,9 @@ function Login() {
       loginRequest(values)
         .then((res) => {
           console.log("logged in", res.userId);
-          localStorage.setItem("userId", res.userId);
           dispatch(setUserId(res.userId));
+          setAuthUser(res.userId);
+          localStorage.setItem("userId", res.userId);
           router.push("/home");
         })
         .catch((err) => {

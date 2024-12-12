@@ -1,38 +1,49 @@
 "use client";
-import { useAppSelector } from "@/app/lib/hooks";
+import { useAppDispatch, useAppSelector } from "@/app/lib/hooks";
+import { setUserObj } from "@/app/lib/user/userSlice";
+import { updateUserProfile } from "@/services/UserService";
 import { Input, Switch, Card, Button } from "@nextui-org/react";
 import { useFormik } from "formik";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FaArrowLeft } from "react-icons/fa";
 import * as Yup from "yup";
 
 function ProfileEdit() {
+  const router = useRouter();
   const userObj = useAppSelector((state) => state.user.userObj);
+  const dispatch = useAppDispatch();
 
   const formik = useFormik({
     initialValues: {
       firstName: userObj.firstName as string,
       lastName: userObj.lastName as string,
       course: userObj.course as string,
-      bio: "",
-      isPrivate: false,
+      bio: userObj.bio as string,
+      isPrivate: userObj.isPrivate,
     },
     validationSchema: Yup.object({
       firstName: Yup.string().required("First name is required"),
       lastName: Yup.string().required("Last name is required"),
       course: Yup.string().required("Course name is required"),
     }),
-    onSubmit: (values) => {
-      console.log(values);
+    onSubmit: async (values) => {
+      try {
+        const res = await updateUserProfile(userObj._id, values);
+        dispatch(setUserObj(res.user));
+        console.log("user profile updated", res);
+        router.push(`/profile/${userObj.username}`);
+      } catch (err) {
+        console.log("Profile update error", err);
+      }
     },
   });
 
-  console.log(formik.values);
   return (
     <div className="px-20 py-8">
       <Card className="bg-primaryWhite px-12 py-8">
         <div className="flex items-center gap-2">
-          <Link href={"/profile"}>
+          <Link href={`/profile/${userObj.username}`}>
             <FaArrowLeft className="rounded-md cursor-pointer" />
           </Link>
 

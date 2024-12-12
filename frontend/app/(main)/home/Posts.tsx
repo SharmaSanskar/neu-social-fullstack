@@ -31,7 +31,7 @@ import useSWR from "swr";
 
 function Posts() {
   const { data: postData, isLoading: isPostLoading } = useSWR(
-    "posts",
+    "feed-posts",
     fetchAllPosts,
     {
       onError: (err) => {

@@ -1,11 +1,12 @@
-import { fetchAllPosts } from "@/services/PostService";
+import { fetchAllPosts, fetchTrendingPosts } from "@/services/PostService";
 import { Card, Avatar } from "@nextui-org/react";
 import useSWR from "swr";
 
+const TRENDING_LIMIT = 3;
 function TrendingSection() {
   const { data: postData, isLoading: isPostLoading } = useSWR(
-    "posts",
-    fetchAllPosts,
+    ["trending-posts", TRENDING_LIMIT],
+    () => fetchTrendingPosts(TRENDING_LIMIT),
     {
       onError: (err) => {
         console.log("Post api error", err);

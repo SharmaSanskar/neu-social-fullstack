@@ -43,7 +43,6 @@ function Signup() {
 
       const updatedValues: any = { ...values };
       delete updatedValues.confirmPassword;
-      console.log("values", updatedValues);
       signupRequest(updatedValues)
         .then((res) => {
           router.push("/login");
@@ -106,7 +105,7 @@ function Signup() {
             name="username"
             label="Username"
             variant="underlined"
-            value={formik.values.course}
+            value={formik.values.username}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
             isInvalid={!!(formik.touched.username && formik.errors.username)}

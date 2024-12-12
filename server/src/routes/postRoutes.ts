@@ -1,6 +1,6 @@
 // src/routes/postRoutes.ts
 import express, { Request, Response, Router, RequestHandler } from 'express';
-import Post, { IPost } from '../models/Post';
+import Post, { IComment, IPost } from '../models/Post';
 import User from '../models/User';
 import mongoose from 'mongoose';
 
@@ -13,44 +13,238 @@ interface PostRequest {
   userId: string;
 }
 
+//Posts
 
-// // Create a new post
-// const createPostHandler: RequestHandler = async (req, res): Promise<void> => {
-//   try {
-//     const { title, content, userId } = req.body as PostRequest;
+interface LikeRequest {
+  userId: string;
+}
 
-//     // Validate user exists
-//     const user = await User.findById(userId);
-//     if (!user) {
-//       res.status(404).json({ message: 'User not found' });
-//       return;
-//     }
-// ///
+interface CommentRequest {
+  userId: string;
+  content: string;
+}
 
-// ///
-//     // Create new post
-//     const post = new Post({
-//       title,
-//       content,
-//       author: userId
-//     });
+// Toggles like for a post
+const toggleLikeHandler: RequestHandler = async (req, res): Promise<void> => {
+  try {
+    const { userId } = req.body as LikeRequest;
+    const postId = req.params.id;
 
-//     await post.save();
+    // Find the post
+    const post = await Post.findById(postId);
+    if (!post) {
+      res.status(404).json({ message: 'Post not found' });
+      return;
+    }
 
-//     res.status(201).json({ 
-//       message: 'Post created successfully', 
-//       post: {
-//         _id: post._id,
-//         title: post.title,
-//         content: post.content,
-//         createdAt: post.createdAt
-//       }
-//     });
-//   } catch (error) {
-//     console.error('Error creating post:', error);
-//     res.status(500).json({ message: 'Error creating post', error });
-//   }
-// };
+    // Check if the user has already liked the post
+    // In this implementation, we'll use a separate collection or method 
+    // to track user likes (not shown in this example)
+    // For now, we'll just increment/decrement likes
+    post.likes += 1;
+
+    await post.save();
+
+    res.json({ 
+      message: 'Post liked',
+      likes: post.likes
+    });
+  } catch (error) {
+    console.error('Error toggling like:', error);
+    res.status(500).json({ message: 'Error processing like', error });
+  }
+};
+
+// Decreases like count (unlike)
+const unlikePostHandler: RequestHandler = async (req, res): Promise<void> => {
+  try {
+    const { userId } = req.body as LikeRequest;
+    const postId = req.params.id;
+
+    // Find the post
+    const post = await Post.findById(postId);
+    if (!post) {
+      res.status(404).json({ message: 'Post not found' });
+      return;
+    }
+
+    // Ensure likes don't go below zero
+    post.likes = Math.max(0, post.likes - 1);
+
+    await post.save();
+
+    res.json({ 
+      message: 'Post unliked',
+      likes: post.likes
+    });
+  } catch (error) {
+    console.error('Error unliking post:', error);
+    res.status(500).json({ message: 'Error processing unlike', error });
+  }
+};
+
+// Add Comment to a Post
+const addCommentHandler: RequestHandler = async (req, res): Promise<void> => {
+  try {
+    const { userId, content } = req.body as CommentRequest;
+    const postId = req.params.id;
+
+    // Validate user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+
+    // Find the post
+    const post = await Post.findById(postId);
+    if (!post) {
+      res.status(404).json({ message: 'Post not found' });
+      return;
+    }
+
+    // Create new comment
+    const newComment: IComment = {
+      content,
+      author: new mongoose.Types.ObjectId(userId),
+      createdAt: new Date(),
+      _id: undefined
+    };
+
+    // Add comment to post
+    post.commentsList.push(newComment);
+    
+    // Increment comment count
+    post.comments += 1;
+
+    await post.save();
+
+    // Populate the last added comment's author details
+    await post.populate('commentsList.author', 'firstName lastName username');
+
+    // Get the last added comment
+    const addedComment = post.commentsList[post.commentsList.length - 1];
+
+    res.status(201).json({ 
+      message: 'Comment added successfully', 
+      comment: {
+        _id: addedComment._id,
+        content: addedComment.content,
+        author: addedComment.author,
+        createdAt: addedComment.createdAt
+      }
+    });
+  } catch (error) {
+    console.error('Error adding comment:', error);
+    res.status(500).json({ message: 'Error adding comment', error });
+  }
+};
+
+// Delete Comment from a Post
+const deleteCommentHandler: RequestHandler = async (req, res): Promise<void> => {
+  try {
+    const { userId } = req.body as { userId: string };
+    const { postId, commentId } = req.params;
+
+    // Find the post
+    const post = await Post.findById(postId);
+    if (!post) {
+      res.status(404).json({ message: 'Post not found' });
+      return;
+    }
+
+    // Find the comment
+    const commentIndex = post.commentsList.findIndex(
+      comment => comment._id.toString() === commentId
+    );
+
+    if (commentIndex === -1) {
+      res.status(404).json({ message: 'Comment not found' });
+      return;
+    }
+
+    const comment = post.commentsList[commentIndex];
+
+    // Check if user is the post author or the comment author
+    const isPostAuthor = post.author.toString() === userId;
+    const isCommentAuthor = comment.author.toString() === userId;
+
+    if (!isPostAuthor && !isCommentAuthor) {
+      res.status(403).json({ message: 'Not authorized to delete this comment' });
+      return;
+    }
+
+    // Remove the comment
+    post.commentsList.splice(commentIndex, 1);
+    
+    // Decrement comment count
+    post.comments -= 1;
+
+    await post.save();
+
+    res.json({ 
+      message: 'Comment deleted successfully',
+      commentId 
+    });
+  } catch (error) {
+    console.error('Error deleting comment:', error);
+    res.status(500).json({ message: 'Error deleting comment', error });
+  }
+};
+
+const updateCommentHandler: RequestHandler = async (req, res): Promise<void> => {
+  try {
+    const { userId, content } = req.body as CommentRequest;
+    const { postId, commentId } = req.params;
+
+    // Find the post
+    const post = await Post.findById(postId);
+    if (!post) {
+      res.status(404).json({ message: 'Post not found' });
+      return;
+    }
+
+    // Find the comment
+    const comment = post.commentsList.find(
+      c => c._id.toString() === commentId
+    );
+
+    if (!comment) {
+      res.status(404).json({ message: 'Comment not found' });
+      return;
+    }
+
+    // Check if user is the comment author
+    if (comment.author.toString() !== userId) {
+      res.status(403).json({ message: 'Not authorized to update this comment' });
+      return;
+    }
+
+    // Update comment content
+    comment.content = content;
+
+    await post.save();
+
+    // Populate author details
+    await post.populate('commentsList.author', 'firstName lastName username');
+
+    res.json({ 
+      message: 'Comment updated successfully',
+      comment: {
+        _id: comment._id,
+        content: comment.content,
+        author: comment.author,
+        createdAt: comment.createdAt
+      }
+    });
+  } catch (error) {
+    console.error('Error updating comment:', error);
+    res.status(500).json({ message: 'Error updating comment', error });
+  }
+};
+
+
+//Posts End
 
 const createPostHandler: RequestHandler = async (req, res): Promise<void> => {
   try {
@@ -156,7 +350,7 @@ const getTrendingPostsHandler: RequestHandler = async (req, res): Promise<void> 
 const getAllPostsHandler: RequestHandler = async (req, res): Promise<void> => {
   try {
     const posts = await Post.find()
-      .populate('author', 'firstName lastName email')
+      .populate('author', 'firstName lastName username')
       .sort({ createdAt: -1 });
 
     res.json(posts.map(post => ({
@@ -177,7 +371,8 @@ const getAllPostsHandler: RequestHandler = async (req, res): Promise<void> => {
 const getPostByIdHandler: RequestHandler = async (req, res): Promise<void> => {
   try {
     const post = await Post.findById(req.params.id)
-      .populate('author', 'firstName lastName email');
+      .populate('author', 'firstName lastName username')
+      .populate('commentsList.author', 'firstName lastName username');
 
     if (!post) {
       res.status(404).json({ message: 'Post not found' });
@@ -191,7 +386,13 @@ const getPostByIdHandler: RequestHandler = async (req, res): Promise<void> => {
       author: post.author,
       createdAt: post.createdAt,
       likes: post.likes,
-      comments: post.comments
+      comments: post.comments,
+      commentsList: post.commentsList.map(comment => ({
+        _id: comment._id,
+        content: comment.content,
+        author: comment.author,
+        createdAt: comment.createdAt
+      }))
     });
   } catch (error) {
     res.status(500).json({ message: 'Error fetching post', error });
@@ -274,6 +475,12 @@ router.get('/posts/:id', getPostByIdHandler);
 router.put('/posts/:id', updatePostHandler);
 router.delete('/posts/:id', deletePostHandler);
 router.get('/posts/user/:userId', getPostsByUserIdHandler);
+router.post('/posts/:id/like', toggleLikeHandler);
+router.post('/posts/:id/unlike', unlikePostHandler);
+router.post('/posts/:id/comments', addCommentHandler);
+router.delete('/posts/:postId/comments/:commentId', deleteCommentHandler);
+router.put('/posts/:postId/comments/:commentId', updateCommentHandler);
+
 
 
 export default router;

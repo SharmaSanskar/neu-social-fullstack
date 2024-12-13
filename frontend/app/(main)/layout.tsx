@@ -49,7 +49,9 @@ export default function MainLayout({
       ) : (
         <>
           <SideNav />
-          <div className="bg-slate-200 ml-[14vw] min-h-screen">{children}</div>
+          <div className="bg-slate-200 ml-0 md:ml-[14vw] min-h-screen">
+            {children}
+          </div>
         </>
       )}
     </main>

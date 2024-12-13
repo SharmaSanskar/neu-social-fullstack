@@ -1,6 +1,10 @@
 import { useAppSelector } from "@/app/lib/hooks";
 import { formatRelativeDate } from "@/app/utils/utils";
-import { addCommentRequest } from "@/services/PostService";
+import {
+  addCommentRequest,
+  likePostRequest,
+  unlikePostRequest,
+} from "@/services/PostService";
 import {
   Card,
   CardHeader,
@@ -13,13 +17,12 @@ import {
 } from "@nextui-org/react";
 import Link from "next/link";
 import { useState } from "react";
-import { FaHeart, FaCommentAlt } from "react-icons/fa";
+import { FaHeart, FaRegHeart, FaRegCommentAlt } from "react-icons/fa";
 
 function Post({ postObj }: { postObj: any }) {
   const userObj = useAppSelector((state) => state.user.userObj);
   const [post, setPost] = useState(postObj);
   const [newComment, setNewComment] = useState("");
-  console.log("POST", post);
 
   const postNewComment = async () => {
     try {
@@ -56,6 +59,34 @@ function Post({ postObj }: { postObj: any }) {
       console.log("Add comment error", err);
     }
   };
+
+  const handleLikeClick = async () => {
+    try {
+      if (post.likedBy.includes(userObj._id)) {
+        const updatedPost = {
+          ...post,
+          likedBy: post.likedBy.filter((i: string) => i !== userObj._id),
+          likes: post.likes - 1,
+        };
+        setPost(updatedPost);
+        await unlikePostRequest(post._id, {
+          userId: userObj._id,
+        });
+      } else {
+        const updatedPost = {
+          ...post,
+          likedBy: [...post.likedBy, userObj._id],
+          likes: post.likes + 1,
+        };
+        setPost(updatedPost);
+        await likePostRequest(post._id, {
+          userId: userObj._id,
+        });
+      }
+    } catch (err) {
+      console.log("Like api err", err);
+    }
+  };
   return (
     <Card className="bg-primaryWhite py-2 px-4">
       <CardHeader>
@@ -90,12 +121,20 @@ function Post({ postObj }: { postObj: any }) {
       <CardBody>{post.content}</CardBody>
       <div className="flex flex-col">
         <div className="flex gap-4">
-          <div onClick={() => {}} className="flex items-center gap-2">
-            <FaHeart />
+          <div
+            onClick={() => handleLikeClick()}
+            className="flex items-center gap-2"
+          >
+            {post.likedBy.includes(userObj._id) ? (
+              <FaHeart className="text-neuRed" />
+            ) : (
+              <FaRegHeart />
+            )}
+
             {post.likes}
           </div>
           <div onClick={() => {}} className="flex items-center gap-2">
-            <FaCommentAlt />
+            <FaRegCommentAlt />
             {post.comments}
           </div>
         </div>
@@ -119,14 +158,16 @@ function Post({ postObj }: { postObj: any }) {
             Add
           </Button>
         </div>
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1 text-left">
           {post.commentsList &&
             post.commentsList.map((comment: any) => (
               <div
                 key={comment._id}
                 className="text-sm bg-gray-100 p-2 ml-2 rounded-lg border-l-4 border-neuBlue"
               >
-                <p className="font-semibold">@{comment.author.username}</p>
+                <Link href={`/profile/${comment.username}`}>
+                  <p className="font-semibold">@{comment.username}</p>
+                </Link>
                 <p className="ml-4">{comment.content}</p>
               </div>
             ))}

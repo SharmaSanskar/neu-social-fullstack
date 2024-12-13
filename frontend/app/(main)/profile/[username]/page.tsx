@@ -48,7 +48,10 @@ function Profile({ params }: { params: { username: string } }) {
                     <UserPosts userId={userProfileData._id} />
                   </Tab>
                   <Tab key="friends" title="Friends">
-                    <UserFriends userId={userProfileData._id} />
+                    <UserFriends
+                      userId={userProfileData._id}
+                      isOwnProfile={isOwnProfile}
+                    />
                   </Tab>
                 </Tabs>
               </div>

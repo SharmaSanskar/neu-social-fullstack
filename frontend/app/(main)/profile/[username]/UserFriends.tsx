@@ -8,8 +8,15 @@ import useSWR from "swr";
 import { FaUserSlash } from "react-icons/fa";
 import { useAppDispatch, useAppSelector } from "@/app/lib/hooks";
 import { setUserObj } from "@/app/lib/user/userSlice";
+import Link from "next/link";
 
-function UserFriends({ userId }: { userId: string }) {
+function UserFriends({
+  userId,
+  isOwnProfile,
+}: {
+  userId: string;
+  isOwnProfile: boolean;
+}) {
   const [friendsList, setFriendsList] = useState([]);
   const { data: friendsData, isLoading: isFriendsLoading } = useSWR(
     ["user-friends", userId],
@@ -36,6 +43,7 @@ function UserFriends({ userId }: { userId: string }) {
                 friend={friend}
                 friendsList={friendsList}
                 setFriendsList={setFriendsList}
+                isOwnProfile={isOwnProfile}
               />
             ))}
       </div>
@@ -47,10 +55,12 @@ function FriendTile({
   friend,
   friendsList,
   setFriendsList,
+  isOwnProfile,
 }: {
   friend: any;
   friendsList: any[];
   setFriendsList: any;
+  isOwnProfile: boolean;
 }) {
   const currentUser = useAppSelector((state) => state.user.userObj);
   const dispatch = useAppDispatch();
@@ -72,7 +82,7 @@ function FriendTile({
         friendId: friend._id,
       });
     } catch (err) {
-      console.log("Accept friend request error", err);
+      console.log("Remove friend request error", err);
     }
   };
   return (
@@ -91,9 +101,11 @@ function FriendTile({
 
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
-              <h2 className="font-bold">
-                {friend.firstName} {friend.lastName}
-              </h2>
+              <Link href={`/profile/${friend.username}`}>
+                <h2 className="font-bold hover:underline">
+                  {friend.firstName} {friend.lastName}
+                </h2>
+              </Link>
 
               <h5 className="text-sm text-default-400">@{friend.username}</h5>
             </div>
@@ -101,16 +113,19 @@ function FriendTile({
             <h5 className="text-sm text-left">{friend.course}</h5>
           </div>
         </div>
-        <div>
-          <Button
-            onClick={removeFriend}
-            className="bg-neuRed text-primaryWhite"
-            radius="sm"
-            size="sm"
-          >
-            Remove
-          </Button>
-        </div>
+
+        {isOwnProfile && (
+          <div>
+            <Button
+              onClick={removeFriend}
+              className="bg-neuRed text-primaryWhite"
+              radius="sm"
+              size="sm"
+            >
+              Remove
+            </Button>
+          </div>
+        )}
       </div>
     </Card>
   );

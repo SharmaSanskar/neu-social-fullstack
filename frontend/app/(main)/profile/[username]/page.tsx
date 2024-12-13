@@ -19,9 +19,7 @@ function Profile({ params }: { params: { username: string } }) {
     ["user-profile", params.username],
     () => fetchUserDataByUsername(params.username),
     {
-      onSuccess: (data) => {
-        console.log("PRFILE", data);
-      },
+      onSuccess: (data) => {},
       onError: (err) => {
         console.log("User profile api error", err);
       },
@@ -34,7 +32,10 @@ function Profile({ params }: { params: { username: string } }) {
         <div>Getting user profile...</div>
       ) : (
         <>
-          <UserCard userObj={userProfileData} isOwnProfile={isOwnProfile} />
+          <UserCard
+            userObj={isOwnProfile ? userObj : userProfileData}
+            isOwnProfile={isOwnProfile}
+          />
           <Divider className="my-6" />
 
           {userProfileData.isPrivate && !isOwnProfile ? (

@@ -19,6 +19,11 @@ export const fetchAllUsers = async () => {
   return res.data;
 };
 
+export const fetchMultipleUsers = async (data: { userIds: string[] }) => {
+  const res = await userApi.post(`/api/users/multiple`, data);
+  return res.data;
+};
+
 export const updateUserProfile = async (userId: string, newProfile: any) => {
   const res = await userApi.put(`/api/users/${userId}`, newProfile);
   return res.data;

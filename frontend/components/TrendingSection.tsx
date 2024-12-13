@@ -30,7 +30,7 @@ function TrendingSection() {
 function PostTile({ post }: { post: any }) {
   return (
     <Card shadow="sm" radius="sm" className="bg-primaryWhite p-2 mx-1">
-      <div className="flex gap-3 items-center">
+      <div className="flex gap-2 items-center">
         <Avatar
           radius="full"
           isBordered

@@ -292,11 +292,9 @@ const sendFriendRequestHandler: RequestHandler = async (
       sender.friendRequests.sent.includes(recipientId) ||
       recipient.friendRequests.received.includes(senderId)
     ) {
-      res
-        .status(400)
-        .json({
-          message: "Friend request already exists or users are already friends",
-        });
+      res.status(400).json({
+        message: "Friend request already exists or users are already friends",
+      });
       return;
     }
 
@@ -447,9 +445,35 @@ const removeFriendHandler: RequestHandler = async (req, res): Promise<void> => {
   }
 };
 
+const fetchMultipleUsersHandler = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { userIds } = req.body;
+
+    // Validate input
+    if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
+      res.status(400).json({ message: "Invalid or missing user IDs" });
+      return;
+    }
+
+    // Fetch users by IDs
+    const users = await User.find({
+      _id: { $in: userIds },
+    }).select("-password"); // Exclude password from the response
+
+    res.status(200).json(users);
+  } catch (error) {
+    console.error("Error fetching users by IDs:", error);
+    res.status(500).json({ message: "Error fetching users by IDs", error });
+  }
+};
+
 router.post("/signup", signupHandler);
 router.post("/login", loginHandler);
 router.get("/users", getAllUsersHandler);
+router.post("/users/multiple", fetchMultipleUsersHandler);
 router.get("/users/:id", getUserByIdHandler);
 router.put("/users/:id", updateUserHandler);
 router.get("/users/username/:username", getUserByUsernameHandler);

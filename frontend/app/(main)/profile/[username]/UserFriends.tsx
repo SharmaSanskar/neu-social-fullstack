@@ -1,17 +1,22 @@
-import { fetchUserFriends } from "@/services/FriendsService";
+import {
+  fetchUserFriends,
+  removeFriendRequest,
+} from "@/services/FriendsService";
 import { Avatar, Button, Card } from "@nextui-org/react";
 import { useState } from "react";
 import useSWR from "swr";
 import { FaUserSlash } from "react-icons/fa";
+import { useAppDispatch, useAppSelector } from "@/app/lib/hooks";
+import { setUserObj } from "@/app/lib/user/userSlice";
 
 function UserFriends({ userId }: { userId: string }) {
-  const [friendsList, setFriendList] = useState([]);
+  const [friendsList, setFriendsList] = useState([]);
   const { data: friendsData, isLoading: isFriendsLoading } = useSWR(
-    ["users", userId],
+    ["user-friends", userId],
     () => fetchUserFriends(userId),
     {
       onSuccess: (data) => {
-        setFriendList(data);
+        setFriendsList(data);
       },
       onError: (err) => {
         console.log("Users api error", err);
@@ -25,22 +30,60 @@ function UserFriends({ userId }: { userId: string }) {
 
         {isFriendsLoading || !friendsList
           ? ""
-          : friendsList.map((user: any) => (
-              <FriendTile key={user._id} user={user} />
+          : friendsList.map((friend: any) => (
+              <FriendTile
+                key={friend._id}
+                friend={friend}
+                friendsList={friendsList}
+                setFriendsList={setFriendsList}
+              />
             ))}
       </div>
     </div>
   );
 }
 
-function FriendTile({ user }: { user: any }) {
+function FriendTile({
+  friend,
+  friendsList,
+  setFriendsList,
+}: {
+  friend: any;
+  friendsList: any[];
+  setFriendsList: any;
+}) {
+  const currentUser = useAppSelector((state) => state.user.userObj);
+  const dispatch = useAppDispatch();
+
+  const removeFriend = async () => {
+    const updatedUser = {
+      ...currentUser,
+      friendsList: currentUser.friendsList.filter(
+        (id: string) => id != friend._id
+      ),
+      friends: currentUser.friends - 1,
+    };
+    dispatch(setUserObj(updatedUser));
+
+    setFriendsList(friendsList.filter((f: any) => f._id != friend._id));
+    try {
+      const res = await removeFriendRequest({
+        userId: currentUser._id,
+        friendId: friend._id,
+      });
+    } catch (err) {
+      console.log("Accept friend request error", err);
+    }
+  };
   return (
     <Card className="bg-primaryWhite px-6 py-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-6">
           <Avatar
             src={
-              user.profilePicture ? user.profilePicture : "/images/avatar.jpg"
+              friend.profilePicture
+                ? friend.profilePicture
+                : "/images/avatar.jpg"
             }
             className="w-12 h-12"
             isBordered
@@ -49,22 +92,23 @@ function FriendTile({ user }: { user: any }) {
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
               <h2 className="font-bold">
-                {user.firstName} {user.lastName}
+                {friend.firstName} {friend.lastName}
               </h2>
 
-              <h5 className="text-sm text-default-400">@{user.username}</h5>
+              <h5 className="text-sm text-default-400">@{friend.username}</h5>
             </div>
 
-            <h5 className="text-sm">{user.course}</h5>
+            <h5 className="text-sm text-left">{friend.course}</h5>
           </div>
         </div>
         <div>
           <Button
-            className="bg-neuBlue text-primaryWhite"
+            onClick={removeFriend}
+            className="bg-neuRed text-primaryWhite"
             radius="sm"
             size="sm"
           >
-            Follow
+            Remove
           </Button>
         </div>
       </div>

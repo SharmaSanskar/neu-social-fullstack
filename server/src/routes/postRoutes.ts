@@ -333,6 +333,7 @@ const getPostsByUserIdHandler: RequestHandler = async (
         createdAt: post.createdAt,
         likes: post.likes,
         comments: post.comments,
+        commentsList: post.commentsList ? post.commentsList : [],
       }))
     );
   } catch (error) {
@@ -387,6 +388,7 @@ const getAllPostsHandler: RequestHandler = async (req, res): Promise<void> => {
         createdAt: post.createdAt,
         likes: post.likes,
         comments: post.comments,
+        commentsList: post.commentsList ? post.commentsList : [],
       }))
     );
   } catch (error) {

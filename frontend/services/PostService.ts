@@ -23,3 +23,23 @@ export const createPost = async (data: any) => {
   const res = await postApi.post(`/api/posts`, data);
   return res.data;
 };
+
+export const addCommentRequest = async (
+  postId: string,
+  data: { userId: string; content: string }
+) => {
+  const res = await postApi.post(`/api/posts/${postId}/comments`, data);
+  return res.data;
+};
+
+export const deleteCommentRequest = async (
+  postId: string,
+  commentId: string,
+  data: { userId: string }
+) => {
+  const res = await postApi.post(
+    `/posts/${postId}/comments/${commentId}`,
+    data
+  );
+  return res.data;
+};

@@ -1,16 +1,61 @@
+import { useAppSelector } from "@/app/lib/hooks";
 import { formatRelativeDate } from "@/app/utils/utils";
+import { addCommentRequest } from "@/services/PostService";
 import {
   Card,
   CardHeader,
   CardBody,
   CardFooter,
   Avatar,
+  Input,
+  Button,
+  Divider,
 } from "@nextui-org/react";
 import Link from "next/link";
+import { useState } from "react";
 import { FaHeart, FaCommentAlt } from "react-icons/fa";
 
-function Post({ post }: { post: any }) {
+function Post({ postObj }: { postObj: any }) {
+  const userObj = useAppSelector((state) => state.user.userObj);
+  const [post, setPost] = useState(postObj);
+  const [newComment, setNewComment] = useState("");
   console.log("POST", post);
+
+  const postNewComment = async () => {
+    try {
+      const updatedPost = {
+        ...post,
+        commentsList: post.commentsList
+          ? [
+              ...post.commentsList,
+              {
+                _id: 4,
+                author: {
+                  username: userObj.username,
+                },
+                content: newComment,
+              },
+            ]
+          : [
+              {
+                _id: 4,
+                author: {
+                  username: userObj.username,
+                },
+                content: newComment,
+              },
+            ],
+      };
+      console.log(updatedPost);
+      setPost(updatedPost);
+      await addCommentRequest(post._id, {
+        userId: userObj._id,
+        content: newComment,
+      });
+    } catch (err) {
+      console.log("Add comment error", err);
+    }
+  };
   return (
     <Card className="bg-primaryWhite py-2 px-4">
       <CardHeader>
@@ -43,16 +88,50 @@ function Post({ post }: { post: any }) {
         </div>
       </CardHeader>
       <CardBody>{post.content}</CardBody>
-      <CardFooter className="flex gap-4">
-        <div className="flex items-center gap-2">
-          <FaHeart />
-          {post.likes}
+      <div className="flex flex-col">
+        <div className="flex gap-4">
+          <div onClick={() => {}} className="flex items-center gap-2">
+            <FaHeart />
+            {post.likes}
+          </div>
+          <div onClick={() => {}} className="flex items-center gap-2">
+            <FaCommentAlt />
+            {post.comments}
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <FaCommentAlt />
-          {post.comments}
+
+        <Divider className="my-3" />
+        <h2 className="font-semibold">Comments</h2>
+        <div className="flex items-center">
+          <Input
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            className="flex-1 p-2 rounded-lg"
+            type="text"
+            placeholder="Add comment..."
+          />
+          <Button
+            onClick={postNewComment}
+            className="bg-neuBlue text-primaryWhite"
+            radius="sm"
+            size="sm"
+          >
+            Add
+          </Button>
         </div>
-      </CardFooter>
+        <div className="flex flex-col gap-1">
+          {post.commentsList &&
+            post.commentsList.map((comment: any) => (
+              <div
+                key={comment._id}
+                className="text-sm bg-gray-100 p-2 ml-2 rounded-lg border-l-4 border-neuBlue"
+              >
+                <p className="font-semibold">@{comment.author.username}</p>
+                <p className="ml-4">{comment.content}</p>
+              </div>
+            ))}
+        </div>
+      </div>
     </Card>
   );
 }

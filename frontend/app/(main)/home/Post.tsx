@@ -13,7 +13,7 @@ import {
 } from "@nextui-org/react";
 import Link from "next/link";
 import { useState } from "react";
-import { FaHeart, FaCommentAlt } from "react-icons/fa";
+import { FaHeart, FaRegHeart, FaRegCommentAlt } from "react-icons/fa";
 
 function Post({ postObj }: { postObj: any }) {
   const userObj = useAppSelector((state) => state.user.userObj);
@@ -91,11 +91,12 @@ function Post({ postObj }: { postObj: any }) {
       <div className="flex flex-col">
         <div className="flex gap-4">
           <div onClick={() => {}} className="flex items-center gap-2">
-            <FaHeart />
+            <FaHeart className="text-neuRed" />
+            <FaRegHeart />
             {post.likes}
           </div>
           <div onClick={() => {}} className="flex items-center gap-2">
-            <FaCommentAlt />
+            <FaRegCommentAlt />
             {post.comments}
           </div>
         </div>
@@ -119,14 +120,14 @@ function Post({ postObj }: { postObj: any }) {
             Add
           </Button>
         </div>
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1 text-left">
           {post.commentsList &&
             post.commentsList.map((comment: any) => (
               <div
                 key={comment._id}
                 className="text-sm bg-gray-100 p-2 ml-2 rounded-lg border-l-4 border-neuBlue"
               >
-                <p className="font-semibold">@{comment.author.username}</p>
+                <p className="font-semibold">@{comment.username}</p>
                 <p className="ml-4">{comment.content}</p>
               </div>
             ))}

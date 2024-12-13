@@ -2,6 +2,7 @@ import { useAppSelector } from "@/app/lib/hooks";
 import { formatRelativeDate } from "@/app/utils/utils";
 import {
   addCommentRequest,
+  deleteCommentRequest,
   likePostRequest,
   unlikePostRequest,
 } from "@/services/PostService";
@@ -17,7 +18,12 @@ import {
 } from "@nextui-org/react";
 import Link from "next/link";
 import { useState } from "react";
-import { FaHeart, FaRegHeart, FaRegCommentAlt } from "react-icons/fa";
+import {
+  FaHeart,
+  FaRegHeart,
+  FaRegCommentAlt,
+  FaTrashAlt,
+} from "react-icons/fa";
 
 function Post({ postObj }: { postObj: any }) {
   const userObj = useAppSelector((state) => state.user.userObj);
@@ -33,18 +39,14 @@ function Post({ postObj }: { postObj: any }) {
               ...post.commentsList,
               {
                 _id: 4,
-                author: {
-                  username: userObj.username,
-                },
+                username: userObj.username,
                 content: newComment,
               },
             ]
           : [
               {
                 _id: 4,
-                author: {
-                  username: userObj.username,
-                },
+                username: userObj.username,
                 content: newComment,
               },
             ],
@@ -57,6 +59,23 @@ function Post({ postObj }: { postObj: any }) {
       });
     } catch (err) {
       console.log("Add comment error", err);
+    }
+  };
+
+  const deleteComment = async (commentId: string) => {
+    try {
+      const updatedPost = {
+        ...post,
+        commentsList: post.commentsList.filter(
+          (comment: any) => comment._id !== commentId
+        ),
+      };
+      setPost(updatedPost);
+      await deleteCommentRequest(post._id, commentId, {
+        userId: userObj._id,
+      });
+    } catch (err) {
+      console.log("Delete comment error", err);
     }
   };
 
@@ -160,15 +179,25 @@ function Post({ postObj }: { postObj: any }) {
         </div>
         <div className="flex flex-col gap-1 text-left">
           {post.commentsList &&
-            post.commentsList.map((comment: any) => (
+            [...post.commentsList].reverse().map((comment: any) => (
               <div
                 key={comment._id}
-                className="text-sm bg-gray-100 p-2 ml-2 rounded-lg border-l-4 border-neuBlue"
+                className="text-sm bg-gray-100 p-2 ml-2 rounded-lg border-l-4 border-neuBlue flex items-center justify-between"
               >
-                <Link href={`/profile/${comment.username}`}>
-                  <p className="font-semibold">@{comment.username}</p>
-                </Link>
-                <p className="ml-4">{comment.content}</p>
+                <div>
+                  <Link href={`/profile/${comment.username}`}>
+                    <p className="font-semibold">@{comment.username}</p>
+                  </Link>
+                  <p className="ml-4">{comment.content}</p>
+                </div>
+                {comment.author === userObj._id && (
+                  <button
+                    className="bg-neuRed text-primaryWhite p-2 rounded-lg"
+                    onClick={() => deleteComment(comment._id)}
+                  >
+                    <FaTrashAlt />
+                  </button>
+                )}
               </div>
             ))}
         </div>

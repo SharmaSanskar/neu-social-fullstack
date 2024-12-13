@@ -107,9 +107,11 @@ function UserCard({
             </div>
           </div>
 
-          <div className="mt-4 md:mt-0">
-            <WeatherComponent />
-          </div>
+          {isOwnProfile && (
+            <div className="mt-4 md:mt-0">
+              <WeatherComponent />
+            </div>
+          )}
         </div>
 
         <Divider className="my-6" />
@@ -155,12 +157,16 @@ function UserCard({
             Add Friend
           </Button>
         )}
+        {isOwnProfile && (
+          <>
+            <Divider className="my-6" />
 
-        <Divider className="my-6" />
-        <div>
-          <p className="italic">&rdquo;{kanyeQuote}&rdquo;</p>
-          <p className="font-semibold">-Kanye West</p>
-        </div>
+            <div>
+              <p className="italic">&rdquo;{kanyeQuote}&rdquo;</p>
+              <p className="font-semibold">-Kanye West</p>
+            </div>
+          </>
+        )}
       </div>
     </Card>
   );

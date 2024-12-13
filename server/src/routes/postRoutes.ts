@@ -348,6 +348,7 @@ const getPostsByUserIdHandler: RequestHandler = async (
         author: post.author,
         createdAt: post.createdAt,
         likes: post.likes,
+        likedBy: post.likedBy,
         comments: post.comments,
         commentsList: post.commentsList ? post.commentsList : [],
       }))

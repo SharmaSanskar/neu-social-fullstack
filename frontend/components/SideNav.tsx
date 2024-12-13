@@ -81,7 +81,7 @@ function SideNav() {
               <h4 className="text-base font-bold">
                 {userObj.firstName} {userObj.lastName}
               </h4>
-              <p className="text-xs opacity-70">Computer Science</p>
+              <p className="text-xs opacity-70">@{userObj.username}</p>
             </div>
           </div>
           <nav className="flex flex-col items-start gap-4 mt-10">
@@ -127,7 +127,7 @@ function SideNav() {
                 <h4 className="text-base font-bold">
                   {userObj.firstName} {userObj.lastName}
                 </h4>
-                <p className="text-xs opacity-70">Computer Science</p>
+                <p className="text-xs opacity-70">@{userObj.username}</p>
               </div>
             </div>
             <nav className="flex flex-col items-start gap-4">

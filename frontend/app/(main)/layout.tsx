@@ -35,7 +35,6 @@ export default function MainLayout({
     {
       onSuccess: (data) => {
         dispatch(setUserObj(data));
-        console.log("USER", data);
       },
       onError: (err) => {
         // Signout if any authorization error

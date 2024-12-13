@@ -16,7 +16,7 @@ function UserPosts({ userId }: { userId: string }) {
 
   return (
     <div>
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6 mt-4">
         {!isPostLoading && postData.length == 0 && <NoPostsMessage />}
         {isPostLoading || !postData
           ? ""

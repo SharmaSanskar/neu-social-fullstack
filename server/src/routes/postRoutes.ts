@@ -1,8 +1,8 @@
 // src/routes/postRoutes.ts
-import express, { Request, Response, Router, RequestHandler } from 'express';
-import Post, { IComment, IPost } from '../models/Post';
-import User from '../models/User';
-import mongoose from 'mongoose';
+import express, { Request, Response, Router, RequestHandler } from "express";
+import Post, { IComment, IPost } from "../models/Post";
+import User from "../models/User";
+import mongoose from "mongoose";
 
 const router: Router = express.Router();
 
@@ -33,25 +33,25 @@ const toggleLikeHandler: RequestHandler = async (req, res): Promise<void> => {
     // Find the post
     const post = await Post.findById(postId);
     if (!post) {
-      res.status(404).json({ message: 'Post not found' });
+      res.status(404).json({ message: "Post not found" });
       return;
     }
 
     // Check if the user has already liked the post
-    // In this implementation, we'll use a separate collection or method 
+    // In this implementation, we'll use a separate collection or method
     // to track user likes (not shown in this example)
     // For now, we'll just increment/decrement likes
     post.likes += 1;
 
     await post.save();
 
-    res.json({ 
-      message: 'Post liked',
-      likes: post.likes
+    res.json({
+      message: "Post liked",
+      likes: post.likes,
     });
   } catch (error) {
-    console.error('Error toggling like:', error);
-    res.status(500).json({ message: 'Error processing like', error });
+    console.error("Error toggling like:", error);
+    res.status(500).json({ message: "Error processing like", error });
   }
 };
 
@@ -64,7 +64,7 @@ const unlikePostHandler: RequestHandler = async (req, res): Promise<void> => {
     // Find the post
     const post = await Post.findById(postId);
     if (!post) {
-      res.status(404).json({ message: 'Post not found' });
+      res.status(404).json({ message: "Post not found" });
       return;
     }
 
@@ -73,13 +73,13 @@ const unlikePostHandler: RequestHandler = async (req, res): Promise<void> => {
 
     await post.save();
 
-    res.json({ 
-      message: 'Post unliked',
-      likes: post.likes
+    res.json({
+      message: "Post unliked",
+      likes: post.likes,
     });
   } catch (error) {
-    console.error('Error unliking post:', error);
-    res.status(500).json({ message: 'Error processing unlike', error });
+    console.error("Error unliking post:", error);
+    res.status(500).json({ message: "Error processing unlike", error });
   }
 };
 
@@ -92,14 +92,14 @@ const addCommentHandler: RequestHandler = async (req, res): Promise<void> => {
     // Validate user exists
     const user = await User.findById(userId);
     if (!user) {
-      res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ message: "User not found" });
       return;
     }
 
     // Find the post
     const post = await Post.findById(postId);
     if (!post) {
-      res.status(404).json({ message: 'Post not found' });
+      res.status(404).json({ message: "Post not found" });
       return;
     }
 
@@ -108,40 +108,46 @@ const addCommentHandler: RequestHandler = async (req, res): Promise<void> => {
       content,
       author: new mongoose.Types.ObjectId(userId),
       createdAt: new Date(),
-      _id: undefined
+      _id: undefined,
     };
 
     // Add comment to post
     post.commentsList.push(newComment);
-    
+
     // Increment comment count
     post.comments += 1;
 
     await post.save();
 
     // Populate the last added comment's author details
-    await post.populate('commentsList.author', 'firstName lastName username');
+    await post.populate(
+      "commentsList.author",
+      "firstName lastName username profilePicture"
+    );
 
     // Get the last added comment
     const addedComment = post.commentsList[post.commentsList.length - 1];
 
-    res.status(201).json({ 
-      message: 'Comment added successfully', 
+    res.status(201).json({
+      message: "Comment added successfully",
       comment: {
         _id: addedComment._id,
         content: addedComment.content,
         author: addedComment.author,
-        createdAt: addedComment.createdAt
-      }
+        createdAt: addedComment.createdAt,
+      },
     });
   } catch (error) {
-    console.error('Error adding comment:', error);
-    res.status(500).json({ message: 'Error adding comment', error });
+    console.error("Error adding comment:", error);
+    res.status(500).json({ message: "Error adding comment", error });
   }
 };
 
 // Delete Comment from a Post
-const deleteCommentHandler: RequestHandler = async (req, res): Promise<void> => {
+const deleteCommentHandler: RequestHandler = async (
+  req,
+  res
+): Promise<void> => {
   try {
     const { userId } = req.body as { userId: string };
     const { postId, commentId } = req.params;
@@ -149,17 +155,17 @@ const deleteCommentHandler: RequestHandler = async (req, res): Promise<void> => 
     // Find the post
     const post = await Post.findById(postId);
     if (!post) {
-      res.status(404).json({ message: 'Post not found' });
+      res.status(404).json({ message: "Post not found" });
       return;
     }
 
     // Find the comment
     const commentIndex = post.commentsList.findIndex(
-      comment => comment._id.toString() === commentId
+      (comment) => comment._id.toString() === commentId
     );
 
     if (commentIndex === -1) {
-      res.status(404).json({ message: 'Comment not found' });
+      res.status(404).json({ message: "Comment not found" });
       return;
     }
 
@@ -170,29 +176,34 @@ const deleteCommentHandler: RequestHandler = async (req, res): Promise<void> => 
     const isCommentAuthor = comment.author.toString() === userId;
 
     if (!isPostAuthor && !isCommentAuthor) {
-      res.status(403).json({ message: 'Not authorized to delete this comment' });
+      res
+        .status(403)
+        .json({ message: "Not authorized to delete this comment" });
       return;
     }
 
     // Remove the comment
     post.commentsList.splice(commentIndex, 1);
-    
+
     // Decrement comment count
     post.comments -= 1;
 
     await post.save();
 
-    res.json({ 
-      message: 'Comment deleted successfully',
-      commentId 
+    res.json({
+      message: "Comment deleted successfully",
+      commentId,
     });
   } catch (error) {
-    console.error('Error deleting comment:', error);
-    res.status(500).json({ message: 'Error deleting comment', error });
+    console.error("Error deleting comment:", error);
+    res.status(500).json({ message: "Error deleting comment", error });
   }
 };
 
-const updateCommentHandler: RequestHandler = async (req, res): Promise<void> => {
+const updateCommentHandler: RequestHandler = async (
+  req,
+  res
+): Promise<void> => {
   try {
     const { userId, content } = req.body as CommentRequest;
     const { postId, commentId } = req.params;
@@ -200,23 +211,25 @@ const updateCommentHandler: RequestHandler = async (req, res): Promise<void> => 
     // Find the post
     const post = await Post.findById(postId);
     if (!post) {
-      res.status(404).json({ message: 'Post not found' });
+      res.status(404).json({ message: "Post not found" });
       return;
     }
 
     // Find the comment
     const comment = post.commentsList.find(
-      c => c._id.toString() === commentId
+      (c) => c._id.toString() === commentId
     );
 
     if (!comment) {
-      res.status(404).json({ message: 'Comment not found' });
+      res.status(404).json({ message: "Comment not found" });
       return;
     }
 
     // Check if user is the comment author
     if (comment.author.toString() !== userId) {
-      res.status(403).json({ message: 'Not authorized to update this comment' });
+      res
+        .status(403)
+        .json({ message: "Not authorized to update this comment" });
       return;
     }
 
@@ -226,23 +239,25 @@ const updateCommentHandler: RequestHandler = async (req, res): Promise<void> => 
     await post.save();
 
     // Populate author details
-    await post.populate('commentsList.author', 'firstName lastName username');
+    await post.populate(
+      "commentsList.author",
+      "firstName lastName username profilePicture"
+    );
 
-    res.json({ 
-      message: 'Comment updated successfully',
+    res.json({
+      message: "Comment updated successfully",
       comment: {
         _id: comment._id,
         content: comment.content,
         author: comment.author,
-        createdAt: comment.createdAt
-      }
+        createdAt: comment.createdAt,
+      },
     });
   } catch (error) {
-    console.error('Error updating comment:', error);
-    res.status(500).json({ message: 'Error updating comment', error });
+    console.error("Error updating comment:", error);
+    res.status(500).json({ message: "Error updating comment", error });
   }
 };
-
 
 //Posts End
 
@@ -253,7 +268,7 @@ const createPostHandler: RequestHandler = async (req, res): Promise<void> => {
     // Validate user exists
     const user = await User.findById(userId);
     if (!user) {
-      res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ message: "User not found" });
       return;
     }
 
@@ -264,7 +279,7 @@ const createPostHandler: RequestHandler = async (req, res): Promise<void> => {
       author: userId,
       likes: 0,
       comments: 0,
-      trending: false
+      trending: false,
     });
 
     await post.save();
@@ -273,97 +288,109 @@ const createPostHandler: RequestHandler = async (req, res): Promise<void> => {
     user.posts += 1;
     await user.save();
 
-    res.status(201).json({ 
-      message: 'Post created successfully', 
+    res.status(201).json({
+      message: "Post created successfully",
       post: {
         _id: post._id,
         title: post.title,
         content: post.content,
         createdAt: post.createdAt,
         likes: post.likes,
-        comments: post.comments
-      }
+        comments: post.comments,
+      },
     });
   } catch (error) {
-    console.error('Error creating post:', error);
-    res.status(500).json({ message: 'Error creating post', error });
+    console.error("Error creating post:", error);
+    res.status(500).json({ message: "Error creating post", error });
   }
 };
 
 // Get posts by User ID
-const getPostsByUserIdHandler: RequestHandler = async (req, res): Promise<void> => {
+const getPostsByUserIdHandler: RequestHandler = async (
+  req,
+  res
+): Promise<void> => {
   try {
     const userId = req.params.userId;
 
     // Validate user exists
     const user = await User.findById(userId);
     if (!user) {
-      res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ message: "User not found" });
       return;
     }
 
     const posts = await Post.find({ author: userId })
-      .populate('author', 'firstName lastName username')
+      .populate("author", "firstName lastName username profilePicture")
       .sort({ createdAt: -1 });
 
-    res.json(posts.map(post => ({
-      _id: post._id,
-      title: post.title,
-      content: post.content,
-      author: post.author,
-      createdAt: post.createdAt,
-      likes: post.likes,
-      comments: post.comments
-    })));
+    res.json(
+      posts.map((post) => ({
+        _id: post._id,
+        title: post.title,
+        content: post.content,
+        author: post.author,
+        createdAt: post.createdAt,
+        likes: post.likes,
+        comments: post.comments,
+      }))
+    );
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching user posts', error });
+    res.status(500).json({ message: "Error fetching user posts", error });
   }
 };
 
 // Get Trending Posts
-const getTrendingPostsHandler: RequestHandler = async (req, res): Promise<void> => {
+const getTrendingPostsHandler: RequestHandler = async (
+  req,
+  res
+): Promise<void> => {
   try {
     const limit = parseInt(req.query.limit as string) || 10;
 
     // Ensure valid sorting and schema structure
     const trendingPosts = await Post.find()
-      .populate('author', 'firstName lastName username')
+      .populate("author", "firstName lastName username profilePicture")
       .sort({ likes: -1, comments: -1 }) // Sorting by likes and comments
       .limit(limit)
       .exec(); // Ensure the query executes properly
 
-    res.json(trendingPosts.map(post => ({
-      _id: post._id,
-      title: post.title,
-      content: post.content,
-      author: post.author,
-      createdAt: post.createdAt,
-      likes: post.likes,
-      comments: post.comments, // Ensure comments are handled properly
-    })));
+    res.json(
+      trendingPosts.map((post) => ({
+        _id: post._id,
+        title: post.title,
+        content: post.content,
+        author: post.author,
+        createdAt: post.createdAt,
+        likes: post.likes,
+        comments: post.comments, // Ensure comments are handled properly
+      }))
+    );
   } catch (error) {
-    console.error('Error fetching trending posts:', error); // Log error for debugging
-    res.status(500).json({ message: 'Error fetching trending posts', error });
+    console.error("Error fetching trending posts:", error); // Log error for debugging
+    res.status(500).json({ message: "Error fetching trending posts", error });
   }
 };
 // Get all posts
 const getAllPostsHandler: RequestHandler = async (req, res): Promise<void> => {
   try {
     const posts = await Post.find()
-      .populate('author', 'firstName lastName username')
+      .populate("author", "firstName lastName username profilePicture")
       .sort({ createdAt: -1 });
 
-    res.json(posts.map(post => ({
-      _id: post._id,
-      title: post.title,
-      content: post.content,
-      author: post.author,
-      createdAt: post.createdAt,
-      likes: post.likes,
-      comments: post.comments
-    })));
+    res.json(
+      posts.map((post) => ({
+        _id: post._id,
+        title: post.title,
+        content: post.content,
+        author: post.author,
+        createdAt: post.createdAt,
+        likes: post.likes,
+        comments: post.comments,
+      }))
+    );
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching posts', error });
+    res.status(500).json({ message: "Error fetching posts", error });
   }
 };
 
@@ -371,11 +398,14 @@ const getAllPostsHandler: RequestHandler = async (req, res): Promise<void> => {
 const getPostByIdHandler: RequestHandler = async (req, res): Promise<void> => {
   try {
     const post = await Post.findById(req.params.id)
-      .populate('author', 'firstName lastName username')
-      .populate('commentsList.author', 'firstName lastName username');
+      .populate("author", "firstName lastName username")
+      .populate(
+        "commentsList.author",
+        "firstName lastName username profilePicture"
+      );
 
     if (!post) {
-      res.status(404).json({ message: 'Post not found' });
+      res.status(404).json({ message: "Post not found" });
       return;
     }
 
@@ -387,15 +417,15 @@ const getPostByIdHandler: RequestHandler = async (req, res): Promise<void> => {
       createdAt: post.createdAt,
       likes: post.likes,
       comments: post.comments,
-      commentsList: post.commentsList.map(comment => ({
+      commentsList: post.commentsList.map((comment) => ({
         _id: comment._id,
         content: comment.content,
         author: comment.author,
-        createdAt: comment.createdAt
-      }))
+        createdAt: comment.createdAt,
+      })),
     });
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching post', error });
+    res.status(500).json({ message: "Error fetching post", error });
   }
 };
 
@@ -408,13 +438,13 @@ const updatePostHandler: RequestHandler = async (req, res): Promise<void> => {
     // Find the post
     const post = await Post.findById(postId);
     if (!post) {
-      res.status(404).json({ message: 'Post not found' });
+      res.status(404).json({ message: "Post not found" });
       return;
     }
 
     // Check if the user is the author of the post
     if (post.author.toString() !== userId) {
-      res.status(403).json({ message: 'Not authorized to update this post' });
+      res.status(403).json({ message: "Not authorized to update this post" });
       return;
     }
 
@@ -425,17 +455,17 @@ const updatePostHandler: RequestHandler = async (req, res): Promise<void> => {
 
     await post.save();
 
-    res.json({ 
-      message: 'Post updated successfully',
+    res.json({
+      message: "Post updated successfully",
       post: {
         _id: post._id,
         title: post.title,
         content: post.content,
-        updatedAt: post.updatedAt
-      }
+        updatedAt: post.updatedAt,
+      },
     });
   } catch (error) {
-    res.status(500).json({ message: 'Error updating post', error });
+    res.status(500).json({ message: "Error updating post", error });
   }
 };
 
@@ -448,40 +478,37 @@ const deletePostHandler: RequestHandler = async (req, res): Promise<void> => {
     // Find the post
     const post = await Post.findById(postId);
     if (!post) {
-      res.status(404).json({ message: 'Post not found' });
+      res.status(404).json({ message: "Post not found" });
       return;
     }
 
     // Check if the user is the author of the post
     if (post.author.toString() !== userId) {
-      res.status(403).json({ message: 'Not authorized to delete this post' });
+      res.status(403).json({ message: "Not authorized to delete this post" });
       return;
     }
 
     // Delete post
     await Post.findByIdAndDelete(postId);
 
-    res.json({ message: 'Post deleted successfully' });
+    res.json({ message: "Post deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: 'Error deleting post', error });
+    res.status(500).json({ message: "Error deleting post", error });
   }
 };
 
 // Routes
-router.post('/posts', createPostHandler);
-router.get('/posts', getAllPostsHandler);
-router.get('/posts/trending', getTrendingPostsHandler);
-router.get('/posts/:id', getPostByIdHandler);
-router.put('/posts/:id', updatePostHandler);
-router.delete('/posts/:id', deletePostHandler);
-router.get('/posts/user/:userId', getPostsByUserIdHandler);
-router.post('/posts/:id/like', toggleLikeHandler);
-router.post('/posts/:id/unlike', unlikePostHandler);
-router.post('/posts/:id/comments', addCommentHandler);
-router.delete('/posts/:postId/comments/:commentId', deleteCommentHandler);
-router.put('/posts/:postId/comments/:commentId', updateCommentHandler);
-
-
+router.post("/posts", createPostHandler);
+router.get("/posts", getAllPostsHandler);
+router.get("/posts/trending", getTrendingPostsHandler);
+router.get("/posts/:id", getPostByIdHandler);
+router.put("/posts/:id", updatePostHandler);
+router.delete("/posts/:id", deletePostHandler);
+router.get("/posts/user/:userId", getPostsByUserIdHandler);
+router.post("/posts/:id/like", toggleLikeHandler);
+router.post("/posts/:id/unlike", unlikePostHandler);
+router.post("/posts/:id/comments", addCommentHandler);
+router.delete("/posts/:postId/comments/:commentId", deleteCommentHandler);
+router.put("/posts/:postId/comments/:commentId", updateCommentHandler);
 
 export default router;
-

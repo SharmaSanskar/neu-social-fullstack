@@ -7,6 +7,8 @@ import { useAppSelector } from "@/app/lib/hooks";
 import { fetchUserDataByUsername } from "@/services/UserService";
 import { MdLockPerson } from "react-icons/md";
 import useSWR from "swr";
+import { Tabs, Tab } from "@nextui-org/react";
+import UserFriends from "./UserFriends";
 
 function Profile({ params }: { params: { username: string } }) {
   const userObj = useAppSelector((state) => state.user.userObj);
@@ -17,9 +19,7 @@ function Profile({ params }: { params: { username: string } }) {
     ["user-profile", params.username],
     () => fetchUserDataByUsername(params.username),
     {
-      onSuccess: (data) => {
-        console.log("PRFILE", data);
-      },
+      onSuccess: (data) => {},
       onError: (err) => {
         console.log("User profile api error", err);
       },
@@ -28,17 +28,32 @@ function Profile({ params }: { params: { username: string } }) {
 
   return (
     <div className="px-20 py-8">
-      {isUserProfileLoading && !userProfileData ? (
+      {isUserProfileLoading || !userProfileData ? (
         <div>Getting user profile...</div>
       ) : (
         <>
-          <UserCard userObj={userProfileData} isOwnProfile={isOwnProfile} />
+          <UserCard
+            userObj={isOwnProfile ? userObj : userProfileData}
+            isOwnProfile={isOwnProfile}
+          />
           <Divider className="my-6" />
 
           {userProfileData.isPrivate && !isOwnProfile ? (
             <PrivateProfileMessage />
           ) : (
-            <UserPosts userId={userProfileData._id} />
+            <div className="w-full flex justify-center">
+              <div className="w-full text-center">
+                <Tabs aria-label="Options" size="lg" variant="solid">
+                  <Tab key="posts" title="Posts">
+                    <UserPosts userId={userProfileData._id} />
+                  </Tab>
+                  <Tab key="friends" title="Friends">
+                    <UserFriends userId={userProfileData._id} />
+                  </Tab>
+                </Tabs>
+              </div>
+            </div>
+            //
           )}
         </>
       )}

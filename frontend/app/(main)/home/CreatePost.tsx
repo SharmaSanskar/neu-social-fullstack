@@ -54,7 +54,15 @@ function CreatePost() {
       <Card className="w-full bg-primaryWhite py-2 px-4">
         <CardBody>
           <div className="flex items-center gap-4">
-            <Avatar isBordered src="/images/avatar.jpg" className="w-12 h-12" />
+            <Avatar
+              isBordered
+              src={
+                userObj.profilePicture
+                  ? userObj.profilePicture
+                  : "/images/avatar.jpg"
+              }
+              className="w-12 h-12"
+            />
             <Input
               value={postContent}
               onChange={(e) => setPostContent(e.target.value)}

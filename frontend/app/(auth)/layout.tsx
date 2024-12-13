@@ -7,7 +7,7 @@ export default function AuthLayout({
 }>) {
   return (
     <main className="min-h-screen w-full flex bg-primaryWhite">
-      <section className="flex-1 bg-slate-400 m-3 rounded-xl overflow-hidden">
+      <section className="hidden md:block flex-1 bg-slate-400 m-3 rounded-xl overflow-hidden">
         <div className="w-full h-full relative">
           <Image
             src="/images/auth-banner.jpg"

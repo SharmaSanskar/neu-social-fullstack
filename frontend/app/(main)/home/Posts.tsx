@@ -45,7 +45,7 @@ function Posts() {
       <div className="flex flex-col gap-6">
         {isPostLoading || !postData
           ? ""
-          : postData.map((post: any) => <Post key={post._id} post={post} />)}
+          : postData.map((post: any) => <Post key={post._id} postObj={post} />)}
       </div>
     </div>
   );

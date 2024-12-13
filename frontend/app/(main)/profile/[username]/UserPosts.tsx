@@ -20,7 +20,7 @@ function UserPosts({ userId }: { userId: string }) {
         {!isPostLoading && postData.length == 0 && <NoPostsMessage />}
         {isPostLoading || !postData
           ? ""
-          : postData.map((post: any) => <Post key={post._id} post={post} />)}
+          : postData.map((post: any) => <Post key={post._id} postObj={post} />)}
       </div>
     </div>
   );

@@ -37,10 +37,18 @@ const toggleLikeHandler: RequestHandler = async (req, res): Promise<void> => {
       return;
     }
 
-    // Check if the user has already liked the post
-    // In this implementation, we'll use a separate collection or method
-    // to track user likes (not shown in this example)
-    // For now, we'll just increment/decrement likes
+    // Check if user has already liked the post
+    const hasLiked = post.likedBy.some(
+      (likedUserId) => likedUserId.toString() === userId
+    );
+
+    if (hasLiked) {
+      res.status(400).json({ message: "You have already liked this post" });
+      return;
+    }
+
+    // Add user to likedBy array and increment likes
+    post.likedBy.push(new mongoose.Types.ObjectId(userId));
     post.likes += 1;
 
     await post.save();
@@ -55,6 +63,7 @@ const toggleLikeHandler: RequestHandler = async (req, res): Promise<void> => {
   }
 };
 
+
 // Decreases like count (unlike)
 const unlikePostHandler: RequestHandler = async (req, res): Promise<void> => {
   try {
@@ -68,7 +77,10 @@ const unlikePostHandler: RequestHandler = async (req, res): Promise<void> => {
       return;
     }
 
-    // Ensure likes don't go below zero
+    // Remove user from likedBy array
+    post.likedBy = post.likedBy.filter(
+      (likedUserId) => likedUserId.toString() !== userId
+    );
     post.likes = Math.max(0, post.likes - 1);
 
     await post.save();
@@ -107,6 +119,7 @@ const addCommentHandler: RequestHandler = async (req, res): Promise<void> => {
     const newComment: IComment = {
       content,
       author: new mongoose.Types.ObjectId(userId),
+      username: user.username, // Add username
       createdAt: new Date(),
       _id: undefined,
     };
@@ -134,6 +147,7 @@ const addCommentHandler: RequestHandler = async (req, res): Promise<void> => {
         _id: addedComment._id,
         content: addedComment.content,
         author: addedComment.author,
+        username: addedComment.username, // Include username in response
         createdAt: addedComment.createdAt,
       },
     });
@@ -200,6 +214,7 @@ const deleteCommentHandler: RequestHandler = async (
   }
 };
 
+//Update Comment on a Post
 const updateCommentHandler: RequestHandler = async (
   req,
   res
@@ -250,6 +265,7 @@ const updateCommentHandler: RequestHandler = async (
         _id: comment._id,
         content: comment.content,
         author: comment.author,
+        username: comment.username, // Include username in response
         createdAt: comment.createdAt,
       },
     });
@@ -387,8 +403,15 @@ const getAllPostsHandler: RequestHandler = async (req, res): Promise<void> => {
         author: post.author,
         createdAt: post.createdAt,
         likes: post.likes,
+        likedBy: post.likedBy,
         comments: post.comments,
-        commentsList: post.commentsList ? post.commentsList : [],
+        commentsList: post.commentsList ? post.commentsList.map(comment => ({
+          _id: comment._id,
+          content: comment.content,
+          author: comment.author,
+          username: comment.username, // Include username
+          createdAt: comment.createdAt,
+        })) : [],
       }))
     );
   } catch (error) {
@@ -418,11 +441,13 @@ const getPostByIdHandler: RequestHandler = async (req, res): Promise<void> => {
       author: post.author,
       createdAt: post.createdAt,
       likes: post.likes,
+      likedBy: post.likedBy, // Optionally return users who liked the post
       comments: post.comments,
       commentsList: post.commentsList.map((comment) => ({
         _id: comment._id,
         content: comment.content,
         author: comment.author,
+        username: comment.username, // Include username in comments
         createdAt: comment.createdAt,
       })),
     });
@@ -430,6 +455,7 @@ const getPostByIdHandler: RequestHandler = async (req, res): Promise<void> => {
     res.status(500).json({ message: "Error fetching post", error });
   }
 };
+
 
 // Update post
 const updatePostHandler: RequestHandler = async (req, res): Promise<void> => {

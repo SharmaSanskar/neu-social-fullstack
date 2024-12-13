@@ -6,6 +6,7 @@ export interface IComment {
   _id: any;
   content: string;
   author: Types.ObjectId;
+  username: string;
   createdAt: Date;
 }
 
@@ -14,6 +15,7 @@ export interface IPost extends Document {
   content: string;
   author: Types.ObjectId;
   likes: number;
+  likedBy: Types.ObjectId[];
   comments: number;
   commentsList: IComment[];
   trending: boolean;
@@ -30,6 +32,10 @@ const CommentSchema: Schema = new Schema({
   author: {
     type: Schema.Types.ObjectId,
     ref: 'User',
+    required: true
+  },
+  username: {
+    type: String,
     required: true
   },
   createdAt: {
@@ -57,6 +63,10 @@ const PostSchema: Schema = new Schema({
     type: Number,
     default: 0
   },
+  likedBy: [{
+    type: Schema.Types.ObjectId,
+    ref: 'User'
+  }],
   comments: {
     type: Number,
     default: 0

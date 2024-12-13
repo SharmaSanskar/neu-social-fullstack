@@ -13,7 +13,11 @@ function UserCard({
       <div>
         <div className="flex flex-col md:flex-row items-center gap-6">
           <Avatar
-            src="/images/avatar.jpg"
+            src={
+              userObj.profilePicture
+                ? userObj.profilePicture
+                : "/images/avatar.jpg"
+            }
             className="w-28 h-28 m-1"
             isBordered
           />

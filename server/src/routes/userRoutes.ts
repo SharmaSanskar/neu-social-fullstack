@@ -1,8 +1,8 @@
 // src/routes/userRoutes.ts
-import express, { Request, Response, Router, RequestHandler } from 'express';
-import bcrypt from 'bcryptjs';
-import User, { IUser } from '../models/User';
-import mongoose from 'mongoose';
+import express, { Request, Response, Router, RequestHandler } from "express";
+import bcrypt from "bcryptjs";
+import User, { IUser } from "../models/User";
+import mongoose from "mongoose";
 
 const router: Router = express.Router();
 
@@ -182,36 +182,39 @@ const getUserByUsernameHandler: RequestHandler = async (
 };
 
 // Profile Picture Update Handler
-const updateProfilePictureHandler: RequestHandler = async (req, res): Promise<void> => {
+const updateProfilePictureHandler: RequestHandler = async (
+  req,
+  res
+): Promise<void> => {
   try {
     const { userId } = req.params;
     const { profilePictureUrl } = req.body;
 
     // Validate input
     if (!profilePictureUrl) {
-      res.status(400).json({ message: 'Profile picture URL is required' });
+      res.status(400).json({ message: "Profile picture URL is required" });
       return;
     }
 
     // Find and update user
     const user = await User.findByIdAndUpdate(
-      userId, 
-      { profilePicture: profilePictureUrl }, 
+      userId,
+      { profilePicture: profilePictureUrl },
       { new: true }
     );
 
     if (!user) {
-      res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ message: "User not found" });
       return;
     }
 
-    res.json({ 
-      message: 'Profile picture updated successfully',
-      profilePicture: user.profilePicture 
+    res.json({
+      message: "Profile picture updated successfully",
+      profilePicture: user.profilePicture,
     });
   } catch (error) {
-    console.error('Error updating profile picture:', error);
-    res.status(500).json({ message: 'Error updating profile picture', error });
+    console.error("Error updating profile picture:", error);
+    res.status(500).json({ message: "Error updating profile picture", error });
   }
 };
 
@@ -223,22 +226,22 @@ const findNewUsersHandler: RequestHandler = async (req, res): Promise<void> => {
     // Find the current user to get their existing friends
     const currentUser = await User.findById(currentUserId);
     if (!currentUser) {
-      res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ message: "User not found" });
       return;
     }
 
     // Find users who are not the current user and not already friends
     const newUsers = await User.find({
-      _id: { 
-        $ne: currentUserId, 
-        $nin: currentUser.friendsList 
-      }
-    }).select('username firstName lastName email course profilePicture');
+      _id: {
+        $ne: currentUserId,
+        $nin: currentUser.friendsList,
+      },
+    }).select("username firstName lastName email course profilePicture");
 
     res.json(newUsers);
   } catch (error) {
-    console.error('Error finding new users:', error);
-    res.status(500).json({ message: 'Error finding new users', error });
+    console.error("Error finding new users:", error);
+    res.status(500).json({ message: "Error finding new users", error });
   }
 };
 
@@ -248,26 +251,28 @@ const fetchFriendsHandler: RequestHandler = async (req, res): Promise<void> => {
     const currentUserId = req.params.userId;
 
     // Find the current user and populate friends
-    const user = await User.findById(currentUserId)
-      .populate({
-        path: 'friendsList',
-        select: 'username firstName lastName email course profilePicture'
-      });
+    const user = await User.findById(currentUserId).populate({
+      path: "friendsList",
+      select: "username firstName lastName email course profilePicture",
+    });
 
     if (!user) {
-      res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ message: "User not found" });
       return;
     }
 
     res.json(user.friendsList);
   } catch (error) {
-    console.error('Error fetching friends:', error);
-    res.status(500).json({ message: 'Error fetching friends', error });
+    console.error("Error fetching friends:", error);
+    res.status(500).json({ message: "Error fetching friends", error });
   }
 };
 
 // Send Friend Request Handler
-const sendFriendRequestHandler: RequestHandler = async (req, res): Promise<void> => {
+const sendFriendRequestHandler: RequestHandler = async (
+  req,
+  res
+): Promise<void> => {
   try {
     const { senderId, recipientId } = req.body;
 
@@ -276,37 +281,48 @@ const sendFriendRequestHandler: RequestHandler = async (req, res): Promise<void>
     const recipient = await User.findById(recipientId);
 
     if (!sender || !recipient) {
-      res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ message: "User not found" });
       return;
     }
 
     // Check if already friends or request already sent
-    if (sender.friendsList.includes(recipientId) || 
-        recipient.friendsList.includes(senderId) ||
-        sender.friendRequests.sent.includes(recipientId) ||
-        recipient.friendRequests.received.includes(senderId)) {
-      res.status(400).json({ message: 'Friend request already exists or users are already friends' });
+    if (
+      sender.friendsList.includes(recipientId) ||
+      recipient.friendsList.includes(senderId) ||
+      sender.friendRequests.sent.includes(recipientId) ||
+      recipient.friendRequests.received.includes(senderId)
+    ) {
+      res
+        .status(400)
+        .json({
+          message: "Friend request already exists or users are already friends",
+        });
       return;
     }
 
     // Add friend requests
     sender.friendRequests.sent.push(new mongoose.Types.ObjectId(recipientId));
-    recipient.friendRequests.received.push(new mongoose.Types.ObjectId(senderId));
+    recipient.friendRequests.received.push(
+      new mongoose.Types.ObjectId(senderId)
+    );
 
     await sender.save();
     await recipient.save();
 
-    res.status(201).json({ 
-      message: 'Friend request sent successfully'
+    res.status(201).json({
+      message: "Friend request sent successfully",
     });
   } catch (error) {
-    console.error('Error sending friend request:', error);
-    res.status(500).json({ message: 'Error sending friend request', error });
+    console.error("Error sending friend request:", error);
+    res.status(500).json({ message: "Error sending friend request", error });
   }
 };
 
 // Accept Friend Request Handler
-const acceptFriendRequestHandler: RequestHandler = async (req, res): Promise<void> => {
+const acceptFriendRequestHandler: RequestHandler = async (
+  req,
+  res
+): Promise<void> => {
   try {
     const { userId, senderId } = req.body;
 
@@ -315,15 +331,17 @@ const acceptFriendRequestHandler: RequestHandler = async (req, res): Promise<voi
     const sender = await User.findById(senderId);
 
     if (!user || !sender) {
-      res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ message: "User not found" });
       return;
     }
 
     // Remove from friend requests
-    user.friendRequests.received = user.friendRequests.received
-      .filter(id => id.toString() !== senderId);
-    sender.friendRequests.sent = sender.friendRequests.sent
-      .filter(id => id.toString() !== userId);
+    user.friendRequests.received = user.friendRequests.received.filter(
+      (id) => id.toString() !== senderId
+    );
+    sender.friendRequests.sent = sender.friendRequests.sent.filter(
+      (id) => id.toString() !== userId
+    );
 
     // Add to friends list
     user.friendsList.push(new mongoose.Types.ObjectId(senderId));
@@ -336,16 +354,16 @@ const acceptFriendRequestHandler: RequestHandler = async (req, res): Promise<voi
     await user.save();
     await sender.save();
 
-    res.json({ 
-      message: 'Friend request accepted',
+    res.json({
+      message: "Friend request accepted",
       friends: {
         user: user.friends,
-        sender: sender.friends
-      }
+        sender: sender.friends,
+      },
     });
   } catch (error) {
-    console.error('Error accepting friend request:', error);
-    res.status(500).json({ message: 'Error accepting friend request', error });
+    console.error("Error accepting friend request:", error);
+    res.status(500).json({ message: "Error accepting friend request", error });
   }
 };
 
@@ -356,7 +374,7 @@ const removeFriendHandler: RequestHandler = async (req, res): Promise<void> => {
 
     // Validate input
     if (!userId || !friendId) {
-      res.status(400).json({ message: 'User ID and Friend ID are required' });
+      res.status(400).json({ message: "User ID and Friend ID are required" });
       return;
     }
 
@@ -365,64 +383,81 @@ const removeFriendHandler: RequestHandler = async (req, res): Promise<void> => {
     const friend = await User.findById(friendId);
 
     if (!user || !friend) {
-      res.status(404).json({ message: 'User or friend not found' });
+      res.status(404).json({ message: "User or friend not found" });
       return;
     }
 
     // Check if they are actually friends
-    const isUserFriend = user.friendsList.some(id => id.toString() === friendId);
-    const isFriendUser = friend.friendsList.some(id => id.toString() === userId);
+    const isUserFriend = user.friendsList.some(
+      (id) => id.toString() === friendId
+    );
+    const isFriendUser = friend.friendsList.some(
+      (id) => id.toString() === userId
+    );
 
     if (!isUserFriend || !isFriendUser) {
-      res.status(400).json({ message: 'Users are not friends' });
+      res.status(400).json({ message: "Users are not friends" });
       return;
     }
 
     // Remove from each other's friends list
-    user.friendsList = user.friendsList.filter(id => id.toString() !== friendId);
-    friend.friendsList = friend.friendsList.filter(id => id.toString() !== userId);
+    user.friendsList = user.friendsList.filter(
+      (id) => id.toString() !== friendId
+    );
+    friend.friendsList = friend.friendsList.filter(
+      (id) => id.toString() !== userId
+    );
 
     // Decrement friends count, ensuring it never goes below 0
     user.friends = Math.max(0, user.friends - 1);
     friend.friends = Math.max(0, friend.friends - 1);
 
     // Remove any pending friend requests if they exist
-    user.friendRequests.sent = user.friendRequests.sent.filter(id => id.toString() !== friendId);
-    user.friendRequests.received = user.friendRequests.received.filter(id => id.toString() !== friendId);
-    
-    friend.friendRequests.sent = friend.friendRequests.sent.filter(id => id.toString() !== userId);
-    friend.friendRequests.received = friend.friendRequests.received.filter(id => id.toString() !== userId);
+    user.friendRequests.sent = user.friendRequests.sent.filter(
+      (id) => id.toString() !== friendId
+    );
+    user.friendRequests.received = user.friendRequests.received.filter(
+      (id) => id.toString() !== friendId
+    );
+
+    friend.friendRequests.sent = friend.friendRequests.sent.filter(
+      (id) => id.toString() !== userId
+    );
+    friend.friendRequests.received = friend.friendRequests.received.filter(
+      (id) => id.toString() !== userId
+    );
 
     // Save both users
     await user.save();
     await friend.save();
 
-    res.json({ 
-      message: 'Friend removed successfully',
+    res.json({
+      message: "Friend removed successfully",
       friends: {
         user: user.friends,
-        friend: friend.friends
-      }
+        friend: friend.friends,
+      },
     });
   } catch (error) {
-    console.error('Error removing friend:', error);
-    res.status(500).json({ 
-      message: 'Error removing friend', 
-      error: error instanceof Error ? error.message : 'Unknown error' 
+    console.error("Error removing friend:", error);
+    res.status(500).json({
+      message: "Error removing friend",
+      error: error instanceof Error ? error.message : "Unknown error",
     });
   }
 };
 
-router.post('/signup', signupHandler);
-router.post('/login', loginHandler);
-router.get('/users', getAllUsersHandler);
-router.get('/users/:id', getUserByIdHandler);
-router.put('/users/:id', updateUserHandler);
-router.put('/users/:userId/profile-picture', updateProfilePictureHandler);
-router.get('/users/find-new/:userId', findNewUsersHandler);
-router.get('/users/friends/:userId', fetchFriendsHandler);
-router.post('/users/friend-request/send', sendFriendRequestHandler);
-router.post('/users/friend-request/accept', acceptFriendRequestHandler);
-router.post('/users/friends/remove', removeFriendHandler);
+router.post("/signup", signupHandler);
+router.post("/login", loginHandler);
+router.get("/users", getAllUsersHandler);
+router.get("/users/:id", getUserByIdHandler);
+router.put("/users/:id", updateUserHandler);
+router.get("/users/username/:username", getUserByUsernameHandler);
+router.put("/users/:userId/profile-picture", updateProfilePictureHandler);
+router.get("/users/find-new/:userId", findNewUsersHandler);
+router.get("/users/friends/:userId", fetchFriendsHandler);
+router.post("/users/friend-request/send", sendFriendRequestHandler);
+router.post("/users/friend-request/accept", acceptFriendRequestHandler);
+router.post("/users/friends/remove", removeFriendHandler);
 
 export default router;

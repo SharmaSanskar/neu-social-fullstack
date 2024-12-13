@@ -6,6 +6,7 @@ import {
   CardFooter,
   Avatar,
 } from "@nextui-org/react";
+import Link from "next/link";
 import { FaHeart, FaCommentAlt } from "react-icons/fa";
 
 function Post({ post }: { post: any }) {
@@ -17,15 +18,23 @@ function Post({ post }: { post: any }) {
           <Avatar
             radius="full"
             isBordered
-            src="https://nextui.org/avatars/avatar-1.png"
+            src={
+              post.author.profilePicture
+                ? post.author.profilePicture
+                : "/images/avatar.jpg"
+            }
             className="w-12 h-12"
           />
           <div className="flex flex-col gap-1 items-start justify-center">
             <div className="flex items-center gap-2">
-              <h4 className="text-sm font-semibold leading-none text-default-600">
-                {post.author.firstName} {post.author.lastName}
-              </h4>
-              <h5 className="text-xs text-default-400">{`@newwuser`}</h5>
+              <Link href={`/profile/${post.author.username}`}>
+                <h4 className="text-sm font-semibold leading-none text-default-600 hover:underline">
+                  {post.author.firstName} {post.author.lastName}
+                </h4>
+              </Link>
+              <h5 className="text-xs text-default-400">
+                @{post.author.username}
+              </h5>
             </div>
             <h5 className="text-xs tracking-tight text-default-400">
               {formatRelativeDate(new Date(post.createdAt))}

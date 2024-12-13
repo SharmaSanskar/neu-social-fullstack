@@ -2,12 +2,13 @@
 import { useAppDispatch, useAppSelector } from "@/app/lib/hooks";
 import { setUserObj } from "@/app/lib/user/userSlice";
 import { updateUserProfile } from "@/services/UserService";
-import { Input, Switch, Card, Button } from "@nextui-org/react";
+import { Input, Switch, Card, Button, Divider } from "@nextui-org/react";
 import { useFormik } from "formik";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FaArrowLeft } from "react-icons/fa";
 import * as Yup from "yup";
+import ProfilePictureUpdate from "./ProfilePictureUpdate";
 
 function ProfileEdit() {
   const router = useRouter();
@@ -49,6 +50,9 @@ function ProfileEdit() {
 
           <h2 className="text-xl font-bold">Edit Profile</h2>
         </div>
+
+        <ProfilePictureUpdate />
+        <Divider className="my-4" />
         <form onSubmit={formik.handleSubmit} className="flex flex-col">
           <div className="flex gap-8">
             <Input

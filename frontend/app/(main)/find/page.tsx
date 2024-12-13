@@ -5,15 +5,17 @@ import FindControls from "./FindControls";
 import FindUsersList from "./FindUsersList";
 import { useEffect, useState } from "react";
 import useSWR from "swr";
-import { fetchAllUsers } from "@/services/UserService";
+import { fetchUnknownUsers } from "@/services/FriendsService";
+import { useAppSelector } from "@/app/lib/hooks";
 
 function Find() {
+  const userId = useAppSelector((state) => state.user.userId);
   const [userList, setUserList] = useState([]);
   const [nameSearchTerm, setNameSearchTerm] = useState("");
   const [courseSearchTerm, setCourseSearchTerm] = useState("");
   const { data: usersData, isLoading: isUsersLoading } = useSWR(
-    "users",
-    fetchAllUsers,
+    ["unkown-users", userId],
+    () => fetchUnknownUsers(userId),
     {
       onSuccess: (data) => {
         setUserList(data);

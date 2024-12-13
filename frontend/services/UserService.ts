@@ -23,3 +23,11 @@ export const updateUserProfile = async (userId: string, newProfile: any) => {
   const res = await userApi.put(`/api/users/${userId}`, newProfile);
   return res.data;
 };
+
+export const updateUserProfilePicture = async (
+  userId: string,
+  data: { profilePictureUrl: string }
+) => {
+  const res = await userApi.put(`/api/users/${userId}/profile-picture`, data);
+  return res.data;
+};

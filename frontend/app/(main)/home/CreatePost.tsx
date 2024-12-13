@@ -56,11 +56,7 @@ function CreatePost() {
           <div className="flex items-center gap-4">
             <Avatar
               isBordered
-              src={
-                userObj.profilePicture
-                  ? userObj.profilePicture
-                  : "/images/avatar.jpg"
-              }
+              src={"/images/avatar.jpg"}
               className="w-12 h-12"
             />
             <Input

@@ -37,9 +37,11 @@ export const deleteCommentRequest = async (
   commentId: string,
   data: { userId: string }
 ) => {
-  const res = await postApi.post(
-    `/posts/${postId}/comments/${commentId}`,
-    data
+  const res = await postApi.delete(
+    `/api/posts/${postId}/comments/${commentId}`,
+    {
+      data,
+    }
   );
   return res.data;
 };

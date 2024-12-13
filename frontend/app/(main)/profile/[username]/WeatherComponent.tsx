@@ -1,5 +1,7 @@
+import { Button } from "@nextui-org/react";
 import React, { useState, useEffect } from "react";
 // import { AlertCircle, Sun, CloudRain, Wind } from 'lucide-react';
+import { FaCloud, FaSun, FaCloudRain, FaWind } from "react-icons/fa";
 
 const WeatherComponent = () => {
   const [weather, setWeather] = useState({} as any);
@@ -7,7 +9,7 @@ const WeatherComponent = () => {
   const [loading, setLoading] = useState(false);
 
   // Replace with your actual OpenWeather API key
-  const API_KEY = "57fdbdd6e366add48035b427496db90e";
+  const API_KEY = process.env.NEXT_PUBLIC_OPEN_WEATHER_API;
 
   const fetchWeather = async (latitude: any, longitude: any) => {
     setLoading(true);
@@ -50,59 +52,48 @@ const WeatherComponent = () => {
     }
   };
 
-  //   const getWeatherIcon = (main) => {
-  //     switch (main.toLowerCase()) {
-  //       case 'clear':
-  //         return <Sun className="text-yellow-500 w-16 h-16" />;
-  //       case 'clouds':
-  //         return <CloudRain className="text-gray-500 w-16 h-16" />;
-  //       case 'rain':
-  //         return <CloudRain className="text-blue-500 w-16 h-16" />;
-  //       default:
-  //         return <Wind className="text-gray-400 w-16 h-16" />;
-  //     }
-  //   };
+  useEffect(() => {
+    getLocation();
+  }, []);
+
+  const getWeatherIcon = (main: any) => {
+    switch (main.toLowerCase()) {
+      case "clear":
+        return <FaSun className="text-yellow-500 w-12 h-12" />;
+      case "clouds":
+        return <FaCloud className="text-gray-500 w-12 h-12" />;
+      case "rain":
+        return <FaCloudRain className="text-blue-500 w-12 h-12" />;
+      default:
+        return <FaWind className="text-gray-400 w-12 h-12" />;
+    }
+  };
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
-      <button
-        onClick={getLocation}
-        className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition duration-300"
-      >
-        Get My Weather
-      </button>
-
-      {loading && (
-        <div className="text-center mt-4">Loading weather data...</div>
-      )}
+    <div>
+      {loading && <div className="text-center">Loading weather data...</div>}
 
       {error && (
-        <div className="flex items-center text-red-500 mt-4">
+        <div className="flex items-center text-red-500">
           {/* <AlertCircle className="mr-2" /> */}
           {error}
         </div>
       )}
 
       {weather && weather.main && (
-        <div className="mt-6 text-center">
-          <div className="flex justify-center mb-4">
-            {/* {getWeatherIcon(weather.weather[0].main)} */}
-          </div>
-          <h3 className="text-xl font-semibold">{weather.name}</h3>
-          <p className="text-gray-600">Temperature: {weather.main.temp}°C</p>
-          <p className="text-gray-600">
-            {weather.weather[0].description.charAt(0).toUpperCase() +
-              weather.weather[0].description.slice(1)}
-          </p>
-          <div className="flex justify-between mt-4">
-            <div>
-              <p className="font-medium">Humidity</p>
-              <p>{weather.main.humidity}%</p>
+        <div className="w-48 mx-auto p-2 bg-white rounded-2xl shadow-lg">
+          <div className="text-center">
+            <div className="flex justify-center">
+              {getWeatherIcon(weather.weather[0].main)}
             </div>
-            <div>
-              <p className="font-medium">Wind Speed</p>
-              <p>{weather.wind.speed} m/s</p>
-            </div>
+            <h3 className="text-base font-semibold">{weather.name}</h3>
+            <p className="text-gray-600 text-sm">
+              Temperature: {weather.main.temp}°C
+            </p>
+            <p className="text-gray-600 text-sm">
+              {weather.weather[0].description.charAt(0).toUpperCase() +
+                weather.weather[0].description.slice(1)}
+            </p>
           </div>
         </div>
       )}

@@ -14,6 +14,8 @@ function UserPosts({ userId }: { userId: string }) {
     }
   );
 
+  console.log(postData);
+
   return (
     <div>
       <div className="flex flex-col gap-6 mt-4">

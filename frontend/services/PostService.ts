@@ -43,3 +43,19 @@ export const deleteCommentRequest = async (
   );
   return res.data;
 };
+
+export const unlikePostRequest = async (
+  postId: string,
+  data: { userId: string }
+) => {
+  const res = await postApi.post(`/api/posts/${postId}/unlike`, data);
+  return res.data;
+};
+
+export const likePostRequest = async (
+  postId: string,
+  data: { userId: string }
+) => {
+  const res = await postApi.post(`/api/posts/${postId}/like`, data);
+  return res.data;
+};
